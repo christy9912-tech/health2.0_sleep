@@ -53,7 +53,7 @@
                 <!-- 版本時間戳記 -->
                 <div class="mt-8 pt-6 border-t border-neutral-800/50">
                     <p class="text-[9px] text-center text-neutral-700 font-mono tracking-widest opacity-50 uppercase">
-                        Build Version: 20260101.1545 (GitHub Assets Integration)
+                        Build Version: 20260101.1600 (Input Fix Edition)
                     </p>
                 </div>
             </div>
@@ -162,7 +162,16 @@
         let messages = [];
         let isLoading = false;
 
-        window.onload = () => { lucide.createIcons(); renderUI(); document.getElementById('user-input').addEventListener('keydown', (e) => { if (e.key === 'Enter') handleSend(); }); };
+        window.onload = () => { 
+            lucide.createIcons(); 
+            renderUI(); 
+            document.getElementById('user-input').addEventListener('keydown', (e) => { 
+                if (e.key === 'Enter') {
+                    e.preventDefault(); // 防止預設換行或提交行為
+                    handleSend(); 
+                }
+            }); 
+        };
 
         function renderUI() {
             const loginView = document.getElementById('login-view');
@@ -219,10 +228,18 @@
         function backToList() { selectedId = null; messages = []; renderPersonaList(); }
 
         async function handleSend() {
-            const inputEl = document.getElementById('user-input'); const text = inputEl.value.trim();
+            const inputEl = document.getElementById('user-input'); 
+            const text = inputEl.value.trim();
+            
             if (!text || isLoading) return;
+            
+            // 立即清空輸入框文字，並確保視窗捲動
             inputEl.value = '';
-            messages.push({ role: 'user', content: text }); renderMessages(); setLoadingState(true);
+
+            messages.push({ role: 'user', content: text }); 
+            renderMessages(); 
+            setLoadingState(true);
+            
             try {
                 const persona = PERSONAS[selectedId];
                 const historyText = messages.slice(-6).map(m => `${m.role === 'assistant' ? '角色' : '使用者'}: ${m.content}`).join('\n');
