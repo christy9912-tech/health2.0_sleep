@@ -58,7 +58,7 @@
                 </p>
                 <div class="mt-8 pt-6 border-t border-neutral-800/50">
                     <p class="text-[9px] text-center text-neutral-700 font-mono tracking-widest opacity-50 uppercase">
-                        Build Version: 20260101.1630 (Universal)
+                        Build Version: 20260101.1645 (Auto-Scroll Fix)
                     </p>
                 </div>
             </div>
@@ -179,7 +179,6 @@
             inputField.addEventListener('compositionend', () => { isComposing = false; });
 
             inputField.addEventListener('keydown', (e) => { 
-                // 如果正在組字，或是按下 Enter 選字，不執行發送
                 if (isComposing) return;
                 
                 if (e.key === 'Enter') {
@@ -277,7 +276,6 @@
             
             if (!text || isLoading) return;
             
-            // 強力清空機制：配合瀏覽器渲染循環
             inputEl.value = '';
             requestAnimationFrame(() => {
                 inputEl.value = '';
@@ -334,7 +332,16 @@
                         </div>
                     </div>`;
             }
-            chatBox.scrollTop = chatBox.scrollHeight;
+            
+            // 修正：確保在 DOM 更新後自動捲動到底部
+            requestAnimationFrame(() => {
+                setTimeout(() => {
+                    chatBox.scrollTo({
+                        top: chatBox.scrollHeight,
+                        behavior: 'smooth'
+                    });
+                }, 50);
+            });
         }
 
         async function runAnalysis() {
@@ -395,6 +402,8 @@
             document.getElementById('analysis-report').classList.add('hidden-el'); 
             document.getElementById('chat-messages').classList.remove('hidden-el'); 
             document.getElementById('input-area').classList.remove('hidden-el'); 
+            // 關閉分析後也執行一次捲動到底部
+            renderMessages();
         }
 
         function setLoadingState(loading, isA = false) { 
