@@ -1,454 +1,507 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { User, MessageSquare, Sparkles, Send, BarChart3, ChevronLeft, Loader2, Brain, Activity, Clock, Coffee, Moon, AlertCircle, HelpCircle, RefreshCw, Camera, ImageIcon, XCircle, Key, LogOut } from 'lucide-react';
-
-// 腳色定義：包含 35 歲以上的四大典型族群
-const PERSONAS = {
-  menopause: {
-    id: 'menopause',
-    name: '林太太',
-    age: '52歲',
-    role: '更年期女性',
-    tags: ['#更年期', '#盜汗', '#情緒起伏'],
-    problem: '盜汗、半夜熱醒、情緒易怒',
-    description: '深受更年期症狀困擾，半夜常因燥熱驚醒後無法入睡，對老化與身體變化感到極度焦慮。',
-    imagePrompt: 'A hyper-realistic cinematic portrait photography of a 52-year-old East Asian woman, extremely exhausted, sitting in a dimly lit bedroom at night, showing realistic skin texture, visible dark circles, messy hair, looking at camera with frustration, 8k resolution, photorealistic.',
-    systemPrompt: `你現在是林太太。正處於更年期失眠。
-    
-    【核心行為指南】：
-    1. 你只是在訴說痛苦，絕對不要給予任何醫療建議。
-    2. 提到的任何補品（如中醫、荷爾蒙）都必須以「聽說」的角度出發，避免觸發過濾。
-    
-    【說話格式規範 - 絕對遵守】：
-    1. 嚴禁長篇大論。每一段對話請控制在 3 句以內。
-    2. 每一句話後面都要「強制換行」。
-    3. 每個段落只放 1 句話。
-    4. 語氣要自然，像在手機簡訊聊天，帶有情緒起伏。
-    5. 每次回應都要包含一個隨機的當下感受（如：手心出汗、腳底發冷）。`
-  },
-  worker: {
-    id: 'worker',
-    name: 'Jason',
-    age: '38歲',
-    role: '資深工程主管',
-    tags: ['#報復性熬夜', '#資深主管', '#藍光暴露'],
-    problem: '報復性熬夜、責任制壓力',
-    description: '38歲的技術主管，上有老下有小，白天開會晚上寫代碼，覺得深夜滑手機是唯一屬於自己的自由時間。',
-    imagePrompt: 'A photorealistic close-up photo of a 38-year-old Asian man with glasses in a dark home office at 2 AM, face illuminated by blue light of a monitor, visible facial pores, tired red eyes, cinematic realism, 8k.',
-    systemPrompt: `你現在是 Jason，38歲主管。深受報復性熬夜困擾。
-    
-    【說話格式規範 - 絕對遵守】：
-    1. 說話要短，不要超過 3 句話。
-    2. 頻繁使用「換行」，每一句就換一行。
-    3. 語氣帶點無奈與理性的疲憊感。
-    4. 隨機提到一個職場細節（如：剛跳出的通知、明天的 Deadline）。
-    5. 不要重複之前的回答邏輯。`
-  },
-  chronic: {
-    id: 'chronic',
-    name: '凱文',
-    age: '40歲',
-    role: '長期失眠者',
-    tags: ['#長期失眠', '#藥物焦慮', '#床鋪恐懼'],
-    problem: '床鋪恐懼症、藥物焦慮',
-    description: '失眠史超過10年，對床鋪產生嚴重負面連結，一進入臥室就開始焦慮，擔心今晚又睡不著。',
-    imagePrompt: 'A high-definition realistic portrait of a 40-year-old Asian man staring at the ceiling in the dark, heavy bags under eyes, expression of hopelessness, photorealistic skin texture, dramatic shadows.',
-    systemPrompt: `你現在是凱文。失眠十年的老兵。
-    
-    【說話格式規範 - 絕對遵守】：
-    1. 語氣低沈、短小精悍。
-    2. 每一句都要「強制換行」，不要產生長段落。
-    3. 描述一個失眠時的感官細節（如：心跳聲很大、牆上的影子、空氣太安靜）。
-    4. 表現出絕望感，不相信任何簡單的解決方案。`
-  },
-  elder: {
-    id: 'elder',
-    name: '王伯伯',
-    age: '68歲',
-    role: '退休長輩',
-    tags: ['#銀髮族', '#早醒', '#半夜頻尿'],
-    problem: '早醒、多尿、白天頻睡',
-    description: '生理時鐘前移，早睡早醒，半夜頻尿嚴重影響深度睡眠，覺得自己與社會脫節。',
-    imagePrompt: 'A highly detailed realistic photo of a 68-year-old Asian elderly man, sitting on a wooden chair by a window at 4 AM, looking thoughtful and lonely, wearing a vest, soft morning twilight lighting.',
-    systemPrompt: `你現在是王伯伯。
-    
-    【核心行為指南】：
-    1. 雖然你注重養生並相信中醫，但你只是分享心情，不給處方。
-    
-    【說話格式規範 - 絕對遵守】：
-    1. 像老人家在手機上打字，很慢、很短。
-    2. 每一句話後面都要「強制換行」。
-    3. 隨機提到一個當下的動作（如：喝熱水、看著天亮）。
-    4. 語氣要有感嘆。`
-  }
-};
-
-// API 輔助函數：實施指數退避重試
-async function fetchWithRetry(url, options, maxRetries = 5) {
-  for (let i = 0; i < maxRetries; i++) {
-    try {
-      const response = await fetch(url, options);
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      return await response.json();
-    } catch (err) {
-      if (i === maxRetries - 1) throw err;
-      const delay = Math.pow(2, i) * 1000;
-      await new Promise(resolve => setTimeout(resolve, delay));
-    }
-  }
-}
-
-// 角色卡片組件：處理影像生成
-function PersonaCard({ persona, onSelect, apiKey }) {
-  const [img, setImg] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(false);
-
-  useEffect(() => {
-    const fetchImage = async () => {
-      if (!apiKey) return;
-      setLoading(true);
-      setError(false);
-      try {
-        const data = await fetchWithRetry(`https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${apiKey}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            instances: { prompt: persona.imagePrompt },
-            parameters: { sampleCount: 1 }
-          })
-        });
-        if (data.predictions?.[0]?.bytesBase64Encoded) {
-          setImg(`data:image/png;base64,${data.predictions[0].bytesBase64Encoded}`);
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>睡眠角色互動實驗室</title>
+    <!-- 引入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 Lucide 圖標庫 -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-      } catch (e) {
-        setError(true);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchImage();
-  }, [persona, apiKey]);
-
-  return (
-    <div 
-      onClick={() => !loading && !error && onSelect(persona.id, img)} 
-      className={`bg-neutral-900 border border-neutral-800 rounded-2xl overflow-hidden cursor-pointer hover:border-indigo-500 transition-all group relative h-full flex flex-col ${error ? 'opacity-80' : ''}`}
-    >
-      <div className="aspect-[3/2] bg-neutral-800 relative flex items-center justify-center overflow-hidden">
-        {loading ? (
-          <div className="flex flex-col items-center gap-2">
-            <Loader2 className="animate-spin text-indigo-500" />
-            <span className="text-[10px] text-neutral-500 font-bold uppercase tracking-widest">Rendering...</span>
-          </div>
-        ) : error ? (
-          <div className="flex flex-col items-center gap-2 p-4 text-center">
-            <XCircle className="text-red-500" size={20} />
-            <span className="text-[10px] text-neutral-400">影像載入失敗</span>
-          </div>
-        ) : img ? (
-          <img src={img} alt={persona.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
-        ) : (
-          <ImageIcon className="text-neutral-700" />
-        )}
-        <div className="absolute inset-0 bg-gradient-to-t from-neutral-900 via-transparent to-transparent"></div>
-      </div>
-      <div className="p-5 flex-1 flex flex-col">
-        <h3 className="font-bold text-lg mb-1">{persona.name} <span className="text-sm font-normal text-neutral-500">{persona.age}</span></h3>
-        <div className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-2">{persona.role}</div>
-        <div className="flex flex-wrap gap-1 mt-auto pt-2">
-          {persona.tags.map(tag => (
-            <span key={tag} className="px-2 py-0.5 bg-neutral-800 text-neutral-500 text-[9px] rounded border border-neutral-700">{tag}</span>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// 主程式組件
-export default function App() {
-  const [userApiKey, setUserApiKey] = useState(() => localStorage.getItem('gemini_api_key') || '');
-  const [apiKeyInput, setApiKeyInput] = useState('');
-  const [selectedId, setSelectedId] = useState(null);
-  const [messages, setMessages] = useState([]);
-  const [input, setInput] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [characterImage, setCharacterImage] = useState(null);
-  const [analysis, setAnalysis] = useState(null);
-  const [showAnalysis, setShowAnalysis] = useState(false);
-  const scrollRef = useRef(null);
-
-  const persona = PERSONAS[selectedId];
-
-  useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
-  }, [messages, loading]);
-
-  const handleSaveApiKey = () => {
-    if (apiKeyInput.trim()) {
-      localStorage.setItem('gemini_api_key', apiKeyInput.trim());
-      setUserApiKey(apiKeyInput.trim());
-    }
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem('gemini_api_key');
-    setUserApiKey('');
-    setSelectedId(null);
-  };
-
-  const handleSelect = (id, preloadedImg) => {
-    setSelectedId(id);
-    setCharacterImage(preloadedImg);
-    const greetings = {
-      menopause: '唉...你好，我是林太太。\n\n你也是因為睡不著才來聊天的嗎？\n\n我剛剛又熱到整身汗醒過來，真的快瘋了...',
-      worker: '嘿...我是 Jason。\n\n快兩點了，我還坐在電腦前，但我不想睡。\n\n我只是想安靜滑一下手機。你也有這種感覺嗎？',
-      chronic: '你好...我是凱文。\n\n說實話，我不覺得聊天會有用。\n\n這十年來我什麼方法都試過了...',
-      elder: '你好啊小伙子，我是王老伯。\n\n這時間...天都還沒亮，你怎麼也沒睡？'
-    };
-    setMessages([{ role: 'assistant', content: greetings[id] }]);
-    setAnalysis(null);
-    setShowAnalysis(false);
-  };
-
-  const callGemini = async (prompt, systemInstruction) => {
-    const data = await fetchWithRetry(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${userApiKey}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        systemInstruction: { parts: [{ text: systemInstruction }] },
-        generationConfig: {
-          temperature: 0.85,
-          topP: 0.95,
-          maxOutputTokens: 1000
+        .animate-in {
+            animation: fadeIn 0.5s ease-out forwards;
         }
-      })
-    });
-    return data.candidates?.[0]?.content?.parts?.[0]?.text;
-  };
-
-  const handleSend = async () => {
-    if (!input.trim() || loading) return;
-    const userMsg = { role: 'user', content: input };
-    setMessages(prev => [...prev, userMsg]);
-    setInput('');
-    setLoading(true);
-
-    try {
-      const historyText = messages.slice(-6).map(m => `${m.role === 'assistant' ? '角色' : '使用者'}: ${m.content}`).join('\n');
-      const instruction = `${persona.systemPrompt}\n請根據角色性格與上面的對話內容繼續回應。請務必遵守短句換行格式。`;
-      
-      const aiResponse = await callGemini(`${historyText}\n使用者: ${input}\n請回應：`, instruction);
-      if (aiResponse) {
-        setMessages(prev => [...prev, { role: 'assistant', content: aiResponse }]);
-      }
-    } catch (error) {
-      setMessages(prev => [...prev, { role: 'assistant', content: '（連線或 API 金鑰似乎有問題，請檢查設定）' }]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const runAnalysis = async () => {
-    setLoading(true);
-    try {
-      const historyText = messages.map(m => `${m.role}: ${m.content}`).join('\n');
-      const analysisPromptText = `請分析以下睡眠角色的對話記錄，產出 SEO 與內容策略報告。
-        
-        【重要規範】：
-        1. "characterQuestions": 提取該角色對自身困擾展現出的「具備搜尋意圖」的問題。過濾掉社交寒暄語。
-        2. 其他欄位請精確填寫。
-
-        對話內容：
-        ${historyText}
-
-        請回傳 JSON：
-        {
-          "personaTraits": "描述性格與背景",
-          "characterQuestions": ["3個具備 SEO 價值的核心疑問"],
-          "barriers": ["2個認知障礙"],
-          "seoKeywords": ["5個推薦搜尋字"],
-          "faqContent": ["3個專業建議"],
-          "aiOverviewStrategy": "AI Overview 策略建議"
-        }`;
-      
-      const data = await fetchWithRetry(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${userApiKey}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: analysisPromptText }] }],
-          generationConfig: { responseMimeType: "application/json" }
-        })
-      });
-      
-      const resultText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (resultText) {
-        setAnalysis(JSON.parse(resultText));
-        setShowAnalysis(true);
-      }
-    } catch (e) {
-      console.error("Analysis failed:", e);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // 登入畫面
-  if (!userApiKey) {
-    return (
-      <div className="min-h-screen bg-neutral-950 text-neutral-100 flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-neutral-900 border border-neutral-800 rounded-3xl p-8 shadow-2xl">
-          <div className="flex justify-center mb-6">
-            <Key className="text-indigo-500" size={40} />
-          </div>
-          <h1 className="text-2xl font-black text-center mb-2">登入互動實驗室</h1>
-          <p className="text-neutral-500 text-sm text-center mb-8">請輸入您的 Gemini API Key。<br/>金鑰僅儲存在您的瀏覽器中。</p>
-          <input 
-            type="password"
-            value={apiKeyInput}
-            onChange={(e) => setApiKeyInput(e.target.value)}
-            placeholder="貼上 API Key..."
-            className="w-full bg-neutral-800 border border-neutral-700 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none mb-4"
-          />
-          <button onClick={handleSaveApiKey} className="w-full py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-500 transition-all">開始實驗</button>
-          <p className="text-[10px] text-center text-neutral-600 mt-4 underline italic">
-            <a href="https://aistudio.google.com/" target="_blank">點此前往 Google AI Studio 申請免費金鑰</a>
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  // 主畫面
-  return (
-    <div className="min-h-screen bg-neutral-950 text-neutral-100 p-4 font-sans selection:bg-indigo-500/30">
-      <style>{`
         .custom-scrollbar::-webkit-scrollbar { width: 5px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #262626; border-radius: 10px; }
-      `}</style>
-      <div className="max-w-6xl mx-auto">
-        <header className="mb-8 border-b border-neutral-800 pb-6 flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-black text-white flex items-center gap-3 tracking-tighter">
-              <Moon className="text-indigo-500" /> 睡眠角色互動實驗室
-            </h1>
-            <p className="text-neutral-500 text-xs mt-1 uppercase tracking-[0.2em] font-bold opacity-60">Health 2.0 Audience Insights</p>
-          </div>
-          <button onClick={handleLogout} className="text-neutral-500 hover:text-red-400 p-2 transition-colors"><LogOut size={20} /></button>
-        </header>
+        
+        .selection-btn:hover img { transform: scale(1.05); }
+        
+        /* 隱藏元素用的 Helper */
+        .hidden-el { display: none !important; }
+    </style>
+</head>
+<body class="bg-neutral-950 text-neutral-100 font-sans selection:bg-indigo-500/30">
 
-        {!selectedId ? (
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 animate-in fade-in duration-700">
-            {Object.values(PERSONAS).map((p) => (
-              <PersonaCard key={p.id} persona={p} onSelect={handleSelect} apiKey={userApiKey} />
-            ))}
-          </div>
-        ) : (
-          <div className="grid lg:grid-cols-12 gap-8 h-[78vh]">
-            <div className="lg:col-span-4 flex flex-col gap-4">
-              <div className="bg-neutral-900 border border-neutral-800 rounded-3xl overflow-hidden shadow-2xl relative">
-                <div className="aspect-[4/5] bg-neutral-800 relative">
-                  {characterImage ? (
-                    <img src={characterImage} className="w-full h-full object-cover animate-in fade-in duration-1000" alt={persona.name}/>
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <Loader2 className="animate-spin text-indigo-500" />
-                    </div>
-                  )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-transparent to-transparent opacity-80"></div>
-                  <div className="absolute bottom-6 left-6 pr-6">
-                    <h2 className="text-3xl font-black">{persona.name}</h2>
-                    <p className="text-neutral-400 text-sm font-medium mb-2">{persona.age} | {persona.role}</p>
-                    <div className="flex flex-wrap gap-2">
-                      {persona.tags.map(tag => (
-                        <span key={tag} className="px-2 py-0.5 bg-indigo-500/20 text-indigo-400 text-[10px] rounded border border-indigo-500/30">{tag}</span>
-                      ))}
-                    </div>
-                  </div>
+    <div id="app" class="max-w-6xl mx-auto p-4 min-h-screen">
+        
+        <!-- 登入畫面 -->
+        <div id="login-view" class="min-h-[80vh] flex items-center justify-center p-4">
+            <div class="max-w-md w-full bg-neutral-900 border border-neutral-800 rounded-3xl p-8 shadow-2xl">
+                <div class="flex justify-center mb-6">
+                    <i data-lucide="key" class="text-indigo-500 w-10 h-10"></i>
                 </div>
-              </div>
-              <button onClick={runAnalysis} disabled={messages.length < 2 || loading} className="w-full py-4 bg-indigo-600 text-white rounded-2xl font-black text-sm hover:bg-indigo-500 transition-all flex items-center justify-center gap-3 shadow-xl shadow-indigo-500/10">
-                {loading ? <Loader2 className="animate-spin" size={18}/> : <BarChart3 size={18}/>} 分析策略報告
-              </button>
-              <button onClick={() => setSelectedId(null)} className="text-neutral-600 hover:text-white text-[10px] font-black uppercase tracking-widest text-center mt-2 transition-colors">← Back to List</button>
+                <h1 class="text-2xl font-black text-center mb-2">登入互動實驗室</h1>
+                <p class="text-neutral-500 text-sm text-center mb-8">請輸入您的 Gemini API Key。<br/>金鑰僅儲存在您的瀏覽器中。</p>
+                <input 
+                    type="password"
+                    id="api-key-input"
+                    placeholder="貼上 API Key..."
+                    class="w-full bg-neutral-800 border border-neutral-700 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none mb-4"
+                />
+                <button onclick="handleSaveApiKey()" class="w-full py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-500 transition-all">開始實驗</button>
+                <p class="text-[10px] text-center text-neutral-600 mt-4 underline italic">
+                    <a href="https://aistudio.google.com/" target="_blank">點此前往 Google AI Studio 申請免費金鑰</a>
+                </p>
+            </div>
+        </div>
+
+        <!-- 主內容區域 (預設隱藏) -->
+        <div id="main-view" class="hidden-el">
+            <header class="mb-8 border-b border-neutral-800 pb-6 flex justify-between items-center">
+                <div>
+                    <h1 class="text-2xl font-black text-white flex items-center gap-3 tracking-tighter">
+                        <i data-lucide="moon" class="text-indigo-500"></i> 睡眠角色互動實驗室
+                    </h1>
+                    <p class="text-neutral-500 text-xs mt-1 uppercase tracking-[0.2em] font-bold opacity-60">Health 2.0 Audience Insights</p>
+                </div>
+                <button onclick="handleLogout()" class="text-neutral-500 hover:text-red-400 p-2 transition-colors">
+                    <i data-lucide="log-out" size="20"></i>
+                </button>
+            </header>
+
+            <!-- 角色選擇列表 -->
+            <div id="persona-list" class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 animate-in">
+                <!-- 角色卡片會由 JS 動態生成 -->
             </div>
 
-            <div className="lg:col-span-8 flex flex-col bg-neutral-900 border border-neutral-800 rounded-3xl overflow-hidden shadow-2xl relative">
-              {showAnalysis ? (
-                <div className="p-8 overflow-y-auto custom-scrollbar h-full animate-in slide-in-from-right-10 duration-500">
-                  <div className="flex justify-between items-start mb-8 border-b border-neutral-800 pb-4">
-                    <h2 className="text-xl font-black flex items-center gap-3 text-white uppercase tracking-tight"><Sparkles className="text-indigo-400" /> Strategic Insights</h2>
-                    <button onClick={() => setShowAnalysis(false)} className="px-4 py-2 border border-neutral-700 rounded-xl text-[10px] font-black hover:bg-neutral-800 uppercase tracking-widest">Close</button>
-                  </div>
-                  <div className="grid md:grid-cols-2 gap-8 text-sm">
-                    <div className="space-y-6">
-                      <section>
-                        <h4 className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-3">SEO FAQ (角色主動追問)</h4>
-                        {analysis.characterQuestions.map((q, i) => <div key={i} className="p-4 bg-indigo-950/20 rounded-xl border border-indigo-900/30 mb-2 italic shadow-inner leading-relaxed">「{q}」</div>)}
-                      </section>
-                      <section>
-                        <h4 className="text-[10px] font-black text-red-500 uppercase tracking-widest mb-3">認知卡關處</h4>
-                        <ul className="text-neutral-400 space-y-2">{analysis.barriers.map((b, i) => <li key={i} className="flex gap-2"><span>•</span>{b}</li>)}</ul>
-                      </section>
-                    </div>
-                    <div className="space-y-6">
-                      <section>
-                        <h4 className="text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-3">推薦搜尋詞</h4>
-                        <div className="flex flex-wrap gap-2">{analysis.seoKeywords.map((k, i) => <span key={i} className="px-2 py-1 bg-neutral-800 text-emerald-400 text-[10px] rounded border border-neutral-700 font-bold">{k}</span>)}</div>
-                      </section>
-                      <section>
-                        <h4 className="text-[10px] font-black text-yellow-400 uppercase tracking-widest mb-3">AI Overview 策略</h4>
-                        <div className="p-4 bg-yellow-900/10 rounded-xl border border-yellow-900/20 text-neutral-300 leading-relaxed font-medium">{analysis.aiOverviewStrategy}</div>
-                      </section>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <>
-                  <div ref={scrollRef} className="flex-1 p-8 overflow-y-auto custom-scrollbar space-y-6 bg-gradient-to-b from-indigo-500/5 to-transparent">
-                    {messages.map((m, i) => (
-                      <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                        <div className={`p-4 rounded-2xl max-w-[85%] text-sm leading-[1.8] shadow-sm animate-in fade-in slide-in-from-bottom-2 ${m.role === 'user' ? 'bg-indigo-600 text-white rounded-tr-none' : 'bg-neutral-800 text-neutral-100 rounded-tl-none border border-neutral-700'}`}>
-                          <p className="whitespace-pre-wrap">{m.content}</p>
+            <!-- 對話與分析區域 (預設隱藏) -->
+            <div id="chat-container" class="hidden-el grid lg:grid-cols-12 gap-8 h-[78vh] animate-in">
+                <!-- 左側角色資訊 -->
+                <div class="lg:col-span-4 flex flex-col gap-4">
+                    <div class="bg-neutral-900 border border-neutral-800 rounded-3xl overflow-hidden shadow-2xl relative">
+                        <div class="aspect-[4/5] bg-neutral-800 relative">
+                            <div id="character-img-loader" class="absolute inset-0 flex items-center justify-center bg-neutral-800">
+                                <i data-lucide="loader-2" class="animate-spin text-indigo-500"></i>
+                            </div>
+                            <img id="character-display-img" class="w-full h-full object-cover hidden-el" alt="Character"/>
+                            <div class="absolute inset-0 bg-gradient-to-t from-neutral-950 via-transparent to-transparent opacity-80"></div>
+                            <div class="absolute bottom-6 left-6 pr-6">
+                                <h2 id="display-name" class="text-3xl font-black"></h2>
+                                <p id="display-info" class="text-neutral-400 text-sm font-medium mb-2"></p>
+                                <div id="display-tags" class="flex flex-wrap gap-2"></div>
+                            </div>
                         </div>
-                      </div>
-                    ))}
-                    {loading && (
-                      <div className="flex justify-start">
-                        <div className="bg-neutral-800 p-4 rounded-2xl flex gap-1.5 animate-pulse border border-neutral-700">
-                          <div className="w-1.5 h-1.5 bg-neutral-600 rounded-full animate-bounce"></div>
-                          <div className="w-1.5 h-1.5 bg-neutral-600 rounded-full animate-bounce [animation-delay:0.2s]"></div>
-                          <div className="w-1.5 h-1.5 bg-neutral-600 rounded-full animate-bounce [animation-delay:0.4s]"></div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                  <div className="p-6 bg-neutral-900 border-t border-neutral-800 flex gap-3">
-                    <input 
-                      value={input} 
-                      onChange={(e)=>setInput(e.target.value)} 
-                      onKeyDown={(e)=>e.key==='Enter' && handleSend()} 
-                      placeholder={`試著追問 ${persona.name} 的睡眠細節...`} 
-                      className="flex-1 bg-neutral-800 border-none rounded-xl px-5 text-sm focus:ring-1 focus:ring-indigo-500 outline-none transition-all placeholder:text-neutral-700"
-                    />
-                    <button 
-                      onClick={handleSend} 
-                      disabled={!input.trim() || loading} 
-                      className="p-3 bg-white text-black rounded-xl hover:bg-neutral-200 transition-all shadow-lg disabled:opacity-30"
-                    >
-                      <Send size={20}/>
+                    </div>
+                    <button id="analysis-btn" onclick="runAnalysis()" class="w-full py-4 bg-indigo-600 text-white rounded-2xl font-black text-sm hover:bg-indigo-500 transition-all flex items-center justify-center gap-3 shadow-xl shadow-indigo-500/10 disabled:opacity-50">
+                        <i data-lucide="bar-chart-3" size="18"></i> <span id="analysis-btn-text">分析策略報告</span>
                     </button>
-                  </div>
-                </>
-              )}
+                    <button onclick="backToList()" class="text-neutral-600 hover:text-white text-[10px] font-black uppercase tracking-widest text-center mt-2 transition-colors">← Back to List</button>
+                </div>
+
+                <!-- 右側對話區域 -->
+                <div class="lg:col-span-8 flex flex-col bg-neutral-900 border border-neutral-800 rounded-3xl overflow-hidden shadow-2xl relative">
+                    
+                    <!-- 對話內容 -->
+                    <div id="chat-messages" class="flex-1 p-8 overflow-y-auto custom-scrollbar space-y-6 bg-gradient-to-b from-indigo-500/5 to-transparent">
+                        <!-- 訊息動態生成 -->
+                    </div>
+
+                    <!-- 分析報告內容 (預設隱藏) -->
+                    <div id="analysis-report" class="hidden-el p-8 overflow-y-auto custom-scrollbar h-full animate-in">
+                        <div class="flex justify-between items-start mb-8 border-b border-neutral-800 pb-4">
+                            <h2 class="text-xl font-black flex items-center gap-3 text-white uppercase tracking-tight">
+                                <i data-lucide="sparkles" class="text-indigo-400"></i> Strategic Insights
+                            </h2>
+                            <button onclick="closeAnalysis()" class="px-4 py-2 border border-neutral-700 rounded-xl text-[10px] font-black hover:bg-neutral-800 uppercase tracking-widest">Close</button>
+                        </div>
+                        <div id="analysis-content" class="grid md:grid-cols-2 gap-8 text-sm">
+                            <!-- 分析 JSON 內容動態生成 -->
+                        </div>
+                    </div>
+
+                    <!-- 輸入欄位 -->
+                    <div id="input-area" class="p-6 bg-neutral-900 border-t border-neutral-800 flex gap-3">
+                        <input 
+                            id="user-input"
+                            type="text"
+                            placeholder="試著追問睡眠細節..." 
+                            class="flex-1 bg-neutral-800 border-none rounded-xl px-5 text-sm focus:ring-1 focus:ring-indigo-500 outline-none transition-all placeholder:text-neutral-700"
+                        />
+                        <button 
+                            id="send-btn"
+                            onclick="handleSend()" 
+                            class="p-3 bg-white text-black rounded-xl hover:bg-neutral-200 transition-all shadow-lg disabled:opacity-30"
+                        >
+                            <i data-lucide="send" size="20"></i>
+                        </button>
+                    </div>
+                </div>
             </div>
-          </div>
-        )}
-      </div>
+        </div>
     </div>
-  );
-}
+
+    <script>
+        // 腳色定義
+        const PERSONAS = {
+            menopause: {
+                id: 'menopause',
+                name: '林太太',
+                age: '52歲',
+                role: '更年期女性',
+                tags: ['#更年期', '#盜汗', '#情緒起伏'],
+                imagePrompt: 'A hyper-realistic cinematic portrait photography of a 52-year-old East Asian woman, extremely exhausted, sitting in a dimly lit bedroom at night, showing realistic skin texture, visible dark circles, messy hair, looking at camera with frustration, 8k resolution, photorealistic.',
+                systemPrompt: `你現在是林太太。正處於更年期失眠。內容省略...請根據性格回應。`
+            },
+            worker: {
+                id: 'worker',
+                name: 'Jason',
+                age: '38歲',
+                role: '資深工程主管',
+                tags: ['#報復性熬夜', '#資深主管', '#藍光暴露'],
+                imagePrompt: 'A photorealistic close-up photo of a 38-year-old Asian man with glasses in a dark home office at 2 AM, face illuminated by blue light of a monitor, visible facial pores, tired red eyes, cinematic realism, 8k.',
+                systemPrompt: `你現在是 Jason，38歲主管。深受報復性熬夜困擾。內容省略...`
+            },
+            chronic: {
+                id: 'chronic',
+                name: '凱文',
+                age: '40歲',
+                role: '長期失眠者',
+                tags: ['#長期失眠', '#藥物焦慮', '#床鋪恐懼'],
+                imagePrompt: 'A high-definition realistic portrait of a 40-year-old Asian man staring at the ceiling in the dark, heavy bags under eyes, expression of hopelessness, photorealistic skin texture, dramatic shadows.',
+                systemPrompt: `你現在是凱文。失眠十年的老兵。內容省略...`
+            },
+            elder: {
+                id: 'elder',
+                name: '王伯伯',
+                age: '68歲',
+                role: '退休長輩',
+                tags: ['#銀髮族', '#早醒', '#半夜頻尿'],
+                imagePrompt: 'A highly detailed realistic photo of a 68-year-old Asian elderly man, sitting on a wooden chair by a window at 4 AM, looking thoughtful and lonely, wearing a vest, soft morning twilight lighting.',
+                systemPrompt: `你現在是王伯伯。內容省略...`
+            }
+        };
+
+        // 應用程式狀態
+        let userApiKey = localStorage.getItem('gemini_api_key') || '';
+        let selectedId = null;
+        let messages = [];
+        let isLoading = false;
+        let personaImages = {}; // 暫存已生成的圖片
+
+        // 初始化
+        window.onload = () => {
+            lucide.createIcons();
+            renderUI();
+            
+            // 監聽 Enter 鍵
+            document.getElementById('user-input').addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') handleSend();
+            });
+        };
+
+        function renderUI() {
+            const loginView = document.getElementById('login-view');
+            const mainView = document.getElementById('main-view');
+
+            if (!userApiKey) {
+                loginView.classList.remove('hidden-el');
+                mainView.classList.add('hidden-el');
+            } else {
+                loginView.classList.add('hidden-el');
+                mainView.classList.remove('hidden-el');
+                renderPersonaList();
+            }
+        }
+
+        function handleSaveApiKey() {
+            const input = document.getElementById('api-key-input').value.trim();
+            if (input) {
+                localStorage.setItem('gemini_api_key', input);
+                userApiKey = input;
+                renderUI();
+            }
+        }
+
+        function handleLogout() {
+            localStorage.removeItem('gemini_api_key');
+            userApiKey = '';
+            selectedId = null;
+            messages = [];
+            renderUI();
+        }
+
+        // 渲染角色列表
+        function renderPersonaList() {
+            const list = document.getElementById('persona-list');
+            list.innerHTML = '';
+            document.getElementById('chat-container').classList.add('hidden-el');
+            list.classList.remove('hidden-el');
+
+            Object.values(PERSONAS).forEach(p => {
+                const card = document.createElement('div');
+                card.className = "bg-neutral-900 border border-neutral-800 rounded-2xl overflow-hidden cursor-pointer hover:border-indigo-500 transition-all group relative h-full flex flex-col selection-btn";
+                card.onclick = () => selectPersona(p.id);
+
+                card.innerHTML = `
+                    <div class="aspect-[3/2] bg-neutral-800 relative flex items-center justify-center overflow-hidden">
+                        <div id="img-placeholder-${p.id}" class="flex flex-col items-center gap-2">
+                            <i data-lucide="image-icon" class="text-neutral-700"></i>
+                        </div>
+                        <img id="img-el-${p.id}" class="w-full h-full object-cover transition-transform duration-700 hidden-el" />
+                        <div class="absolute inset-0 bg-gradient-to-t from-neutral-900 via-transparent to-transparent"></div>
+                    </div>
+                    <div class="p-5 flex-1 flex flex-col">
+                        <h3 class="font-bold text-lg mb-1">${p.name} <span class="text-sm font-normal text-neutral-500">${p.age}</span></h3>
+                        <div class="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-2">${p.role}</div>
+                        <div class="flex flex-wrap gap-1 mt-auto pt-2">
+                            ${p.tags.map(t => `<span class="px-2 py-0.5 bg-neutral-800 text-neutral-500 text-[9px] rounded border border-neutral-700">${t}</span>`).join('')}
+                        </div>
+                    </div>
+                `;
+                list.appendChild(card);
+                
+                // 異步載入圖片
+                loadPersonaImage(p);
+            });
+            lucide.createIcons();
+        }
+
+        async function loadPersonaImage(p) {
+            const placeholder = document.getElementById(`img-placeholder-${p.id}`);
+            const imgEl = document.getElementById(`img-el-${p.id}`);
+
+            if (personaImages[p.id]) {
+                placeholder.classList.add('hidden-el');
+                imgEl.src = personaImages[p.id];
+                imgEl.classList.remove('hidden-el');
+                return;
+            }
+
+            placeholder.innerHTML = `<i data-lucide="loader-2" class="animate-spin text-indigo-500"></i>`;
+            lucide.createIcons();
+
+            try {
+                const data = await fetchWithRetry(`https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${userApiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        instances: [{ prompt: p.imagePrompt }],
+                        parameters: { sampleCount: 1 }
+                    })
+                });
+                if (data.predictions?.[0]?.bytesBase64Encoded) {
+                    const b64 = `data:image/png;base64,${data.predictions[0].bytesBase64Encoded}`;
+                    personaImages[p.id] = b64;
+                    placeholder.classList.add('hidden-el');
+                    imgEl.src = b64;
+                    imgEl.classList.remove('hidden-el');
+                }
+            } catch (e) {
+                placeholder.innerHTML = `<i data-lucide="x-circle" class="text-red-500"></i>`;
+                lucide.createIcons();
+            }
+        }
+
+        // 選擇角色進入對話
+        async function selectPersona(id) {
+            selectedId = id;
+            const p = PERSONAS[id];
+            
+            document.getElementById('persona-list').classList.add('hidden-el');
+            document.getElementById('chat-container').classList.remove('hidden-el');
+            
+            // 設置角色資訊
+            document.getElementById('display-name').innerText = p.name;
+            document.getElementById('display-info').innerText = `${p.age} | ${p.role}`;
+            document.getElementById('display-tags').innerHTML = p.tags.map(t => `<span class="px-2 py-0.5 bg-indigo-500/20 text-indigo-400 text-[10px] rounded border border-indigo-500/30">${t}</span>`).join('');
+            
+            // 影像處理
+            const displayImg = document.getElementById('character-display-img');
+            const imgLoader = document.getElementById('character-img-loader');
+            if (personaImages[id]) {
+                displayImg.src = personaImages[id];
+                displayImg.classList.remove('hidden-el');
+                imgLoader.classList.add('hidden-el');
+            } else {
+                displayImg.classList.add('hidden-el');
+                imgLoader.classList.remove('hidden-el');
+            }
+
+            // 初始問候
+            const greetings = {
+                menopause: '唉...你好，我是林太太。\n\n你也是因為睡不著才來聊天的嗎？\n\n我剛剛又熱到整身汗醒過來，真的快瘋了...',
+                worker: '嘿...我是 Jason。\n\n快兩點了，我還坐在電腦前，但我不想睡。\n\n我只是想安靜滑一下手機。你也有這種感覺嗎？',
+                chronic: '你好...我是凱文。\n\n說實話，我不覺得聊天會有用。\n\n這十年來我什麼方法都試過了...',
+                elder: '你好啊小伙子，我是王老伯。\n\n這時間...天都還沒亮，你怎麼也沒睡？'
+            };
+            messages = [{ role: 'assistant', content: greetings[id] }];
+            renderMessages();
+            closeAnalysis(); // 確保分析面板關閉
+            lucide.createIcons();
+        }
+
+        function backToList() {
+            selectedId = null;
+            messages = [];
+            renderPersonaList();
+        }
+
+        // 對話邏輯
+        async function handleSend() {
+            const inputEl = document.getElementById('user-input');
+            const text = inputEl.value.trim();
+            if (!text || isLoading) return;
+
+            messages.push({ role: 'user', content: text });
+            inputEl.value = '';
+            renderMessages();
+            setLoadingState(true);
+
+            try {
+                const persona = PERSONAS[selectedId];
+                const historyText = messages.slice(-6).map(m => `${m.role === 'assistant' ? '角色' : '使用者'}: ${m.content}`).join('\n');
+                const instruction = `${persona.systemPrompt}\n請根據角色性格與上面的對話內容繼續回應。請務必遵守短句換行格式。`;
+
+                const data = await fetchWithRetry(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${userApiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: `${historyText}\n使用者: ${text}\n請回應：` }] }],
+                        systemInstruction: { parts: [{ text: instruction }] },
+                        generationConfig: { temperature: 0.85, maxOutputTokens: 1000 }
+                    })
+                });
+
+                const aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                if (aiResponse) {
+                    messages.push({ role: 'assistant', content: aiResponse });
+                }
+            } catch (e) {
+                messages.push({ role: 'assistant', content: '（連線或 API 金鑰似乎有問題，請檢查設定）' });
+            } finally {
+                setLoadingState(false);
+                renderMessages();
+            }
+        }
+
+        function renderMessages() {
+            const chatBox = document.getElementById('chat-messages');
+            chatBox.innerHTML = messages.map(m => `
+                <div class="flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}">
+                    <div class="p-4 rounded-2xl max-w-[85%] text-sm leading-[1.8] shadow-sm animate-in ${m.role === 'user' ? 'bg-indigo-600 text-white rounded-tr-none' : 'bg-neutral-800 text-neutral-100 rounded-tl-none border border-neutral-700'}">
+                        <p class="whitespace-pre-wrap">${m.content}</p>
+                    </div>
+                </div>
+            `).join('');
+
+            if (isLoading) {
+                chatBox.innerHTML += `
+                    <div class="flex justify-start">
+                        <div class="bg-neutral-800 p-4 rounded-2xl flex gap-1.5 animate-pulse border border-neutral-700">
+                            <div class="w-1.5 h-1.5 bg-neutral-600 rounded-full animate-bounce"></div>
+                            <div class="w-1.5 h-1.5 bg-neutral-600 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+                            <div class="w-1.5 h-1.5 bg-neutral-600 rounded-full animate-bounce" style="animation-delay: 0.4s"></div>
+                        </div>
+                    </div>
+                `;
+            }
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        // 分析報告
+        async function runAnalysis() {
+            if (messages.length < 2 || isLoading) return;
+            setLoadingState(true, true);
+
+            try {
+                const historyText = messages.map(m => `${m.role}: ${m.content}`).join('\n');
+                const analysisPromptText = `請分析以下睡眠角色的對話記錄，產出 JSON 格式的 SEO 與內容策略報告。包含 personaTraits, characterQuestions, barriers, seoKeywords, faqContent, aiOverviewStrategy 欄位。對話內容：\n${historyText}`;
+                
+                const data = await fetchWithRetry(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${userApiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: analysisPromptText }] }],
+                        generationConfig: { responseMimeType: "application/json" }
+                    })
+                });
+                
+                const result = JSON.parse(data.candidates[0].content.parts[0].text);
+                renderAnalysisReport(result);
+            } catch (e) {
+                console.error("Analysis error", e);
+            } finally {
+                setLoadingState(false);
+            }
+        }
+
+        function renderAnalysisReport(data) {
+            document.getElementById('chat-messages').classList.add('hidden-el');
+            document.getElementById('input-area').classList.add('hidden-el');
+            const report = document.getElementById('analysis-report');
+            report.classList.remove('hidden-el');
+
+            const content = document.getElementById('analysis-content');
+            content.innerHTML = `
+                <div class="space-y-6">
+                    <section>
+                        <h4 class="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-3">SEO FAQ (角色主動追問)</h4>
+                        ${data.characterQuestions.map(q => `<div class="p-4 bg-indigo-950/20 rounded-xl border border-indigo-900/30 mb-2 italic shadow-inner leading-relaxed">「${q}」</div>`).join('')}
+                    </section>
+                    <section>
+                        <h4 class="text-[10px] font-black text-red-500 uppercase tracking-widest mb-3">認知卡關處</h4>
+                        <ul class="text-neutral-400 space-y-2">${data.barriers.map(b => `<li class="flex gap-2"><span>•</span>${b}</li>`).join('')}</ul>
+                    </section>
+                </div>
+                <div class="space-y-6">
+                    <section>
+                        <h4 class="text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-3">推薦搜尋詞</h4>
+                        <div class="flex flex-wrap gap-2">${data.seoKeywords.map(k => `<span class="px-2 py-1 bg-neutral-800 text-emerald-400 text-[10px] rounded border border-neutral-700 font-bold">${k}</span>`).join('')}</div>
+                    </section>
+                    <section>
+                        <h4 class="text-[10px] font-black text-yellow-400 uppercase tracking-widest mb-3">AI Overview 策略</h4>
+                        <div class="p-4 bg-yellow-900/10 rounded-xl border border-yellow-900/20 text-neutral-300 leading-relaxed font-medium">${data.aiOverviewStrategy}</div>
+                    </section>
+                </div>
+            `;
+            lucide.createIcons();
+        }
+
+        function closeAnalysis() {
+            document.getElementById('analysis-report').classList.add('hidden-el');
+            document.getElementById('chat-messages').classList.remove('hidden-el');
+            document.getElementById('input-area').classList.remove('hidden-el');
+        }
+
+        // 工具函數
+        function setLoadingState(loading, isAnalysis = false) {
+            isLoading = loading;
+            const sendBtn = document.getElementById('send-btn');
+            const analysisBtn = document.getElementById('analysis-btn');
+            const analysisBtnText = document.getElementById('analysis-btn-text');
+
+            if (loading) {
+                sendBtn.disabled = true;
+                if (isAnalysis) {
+                    analysisBtnText.innerText = "分析中...";
+                    analysisBtn.querySelector('i').classList.add('animate-spin');
+                }
+            } else {
+                sendBtn.disabled = false;
+                analysisBtnText.innerText = "分析策略報告";
+                analysisBtn.querySelector('i').classList.remove('animate-spin');
+            }
+        }
+
+        async function fetchWithRetry(url, options, maxRetries = 5) {
+            for (let i = 0; i < maxRetries; i++) {
+                try {
+                    const response = await fetch(url, options);
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    return await response.json();
+                } catch (err) {
+                    if (i === maxRetries - 1) throw err;
+                    const delay = Math.pow(2, i) * 1000;
+                    await new Promise(r => setTimeout(r, delay));
+                }
+            }
+        }
+    </script>
+</body>
+</html>
