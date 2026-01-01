@@ -51,7 +51,7 @@
             </div>
         </div>
 
-        <!-- 主內容區域 (預設隱藏) -->
+        <!-- 主內容區域 -->
         <div id="main-view" class="hidden-el">
             <header class="mb-8 border-b border-neutral-800 pb-6 flex justify-between items-center">
                 <div>
@@ -66,11 +66,9 @@
             </header>
 
             <!-- 角色選擇列表 -->
-            <div id="persona-list" class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 animate-in">
-                <!-- 角色卡片會由 JS 動態生成 -->
-            </div>
+            <div id="persona-list" class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 animate-in"></div>
 
-            <!-- 對話與分析區域 (預設隱藏) -->
+            <!-- 對話與分析區域 -->
             <div id="chat-container" class="hidden-el grid lg:grid-cols-12 gap-8 h-[78vh] animate-in">
                 <!-- 左側角色資訊 -->
                 <div class="lg:col-span-4 flex flex-col gap-4">
@@ -96,13 +94,7 @@
 
                 <!-- 右側對話區域 -->
                 <div class="lg:col-span-8 flex flex-col bg-neutral-900 border border-neutral-800 rounded-3xl overflow-hidden shadow-2xl relative">
-                    
-                    <!-- 對話內容 -->
-                    <div id="chat-messages" class="flex-1 p-8 overflow-y-auto custom-scrollbar space-y-6 bg-gradient-to-b from-indigo-500/5 to-transparent">
-                        <!-- 訊息動態生成 -->
-                    </div>
-
-                    <!-- 分析報告內容 (預設隱藏) -->
+                    <div id="chat-messages" class="flex-1 p-8 overflow-y-auto custom-scrollbar space-y-6 bg-gradient-to-b from-indigo-500/5 to-transparent"></div>
                     <div id="analysis-report" class="hidden-el p-8 overflow-y-auto custom-scrollbar h-full animate-in">
                         <div class="flex justify-between items-start mb-8 border-b border-neutral-800 pb-4">
                             <h2 class="text-xl font-black flex items-center gap-3 text-white uppercase tracking-tight">
@@ -110,24 +102,11 @@
                             </h2>
                             <button onclick="closeAnalysis()" class="px-4 py-2 border border-neutral-700 rounded-xl text-[10px] font-black hover:bg-neutral-800 uppercase tracking-widest">Close</button>
                         </div>
-                        <div id="analysis-content" class="grid md:grid-cols-2 gap-8 text-sm">
-                            <!-- 分析 JSON 內容動態生成 -->
-                        </div>
+                        <div id="analysis-content" class="grid md:grid-cols-2 gap-8 text-sm"></div>
                     </div>
-
-                    <!-- 輸入欄位 -->
                     <div id="input-area" class="p-6 bg-neutral-900 border-t border-neutral-800 flex gap-3">
-                        <input 
-                            id="user-input"
-                            type="text"
-                            placeholder="試著追問睡眠細節..." 
-                            class="flex-1 bg-neutral-800 border-none rounded-xl px-5 text-sm focus:ring-1 focus:ring-indigo-500 outline-none transition-all placeholder:text-neutral-700"
-                        />
-                        <button 
-                            id="send-btn"
-                            onclick="handleSend()" 
-                            class="p-3 bg-white text-black rounded-xl hover:bg-neutral-200 transition-all shadow-lg disabled:opacity-30"
-                        >
+                        <input id="user-input" type="text" placeholder="試著追問睡眠細節..." class="flex-1 bg-neutral-800 border-none rounded-xl px-5 text-sm focus:ring-1 focus:ring-indigo-500 outline-none transition-all placeholder:text-neutral-700"/>
+                        <button id="send-btn" onclick="handleSend()" class="p-3 bg-white text-black rounded-xl hover:bg-neutral-200 transition-all shadow-lg disabled:opacity-30">
                             <i data-lucide="send" size="20"></i>
                         </button>
                     </div>
@@ -137,126 +116,70 @@
     </div>
 
     <script>
-        // 腳色定義
         const PERSONAS = {
             menopause: {
                 id: 'menopause',
-                name: '林太太',
-                age: '52歲',
-                role: '更年期女性',
+                name: '林太太', age: '52歲', role: '更年期女性',
                 tags: ['#更年期', '#盜汗', '#情緒起伏'],
                 imagePrompt: 'A hyper-realistic cinematic portrait photography of a 52-year-old East Asian woman, extremely exhausted, sitting in a dimly lit bedroom at night, showing realistic skin texture, visible dark circles, messy hair, looking at camera with frustration, 8k resolution, photorealistic.',
-                systemPrompt: `你現在是林太太。正處於更年期失眠。內容省略...請根據性格回應。`
+                systemPrompt: `你現在是林太太。正處於更年期失眠。\n1. 絕對不要給予任何醫療建議。\n2. 提到的任何補品都必須以「聽說」的角度出發。\n3. 每一段對話請控制在 3 句以內，每一句話後面都要「強制換行」。\n4. 每次回應都要包含一個隨機的當下感受。`,
+                greeting: '唉...你好，我是林太太。\n\n你也是因為睡不著才來聊天的嗎？\n\n我剛剛又熱到整身汗醒過來，真的快瘋了...'
             },
             worker: {
                 id: 'worker',
-                name: 'Jason',
-                age: '38歲',
-                role: '資深工程主管',
+                name: 'Jason', age: '38歲', role: '資深工程主管',
                 tags: ['#報復性熬夜', '#資深主管', '#藍光暴露'],
                 imagePrompt: 'A photorealistic close-up photo of a 38-year-old Asian man with glasses in a dark home office at 2 AM, face illuminated by blue light of a monitor, visible facial pores, tired red eyes, cinematic realism, 8k.',
-                systemPrompt: `你現在是 Jason，38歲主管。深受報復性熬夜困擾。內容省略...`
+                systemPrompt: `你現在是 Jason，38歲主管。深受報復性熬夜困擾。\n1. 說話要短，不要超過 3 句話。\n2. 頻繁使用「換行」。\n3. 語氣帶點無奈與理性的疲憊感。\n4. 隨機提到一個職場細節。`,
+                greeting: '嘿...我是 Jason。\n\n快兩點了，我還坐在電腦前，但我不想睡。\n\n我只是想安靜滑一下手機。你也有這種感覺嗎？'
             },
             chronic: {
                 id: 'chronic',
-                name: '凱文',
-                age: '40歲',
-                role: '長期失眠者',
+                name: '凱文', age: '40歲', role: '長期失眠者',
                 tags: ['#長期失眠', '#藥物焦慮', '#床鋪恐懼'],
                 imagePrompt: 'A high-definition realistic portrait of a 40-year-old Asian man staring at the ceiling in the dark, heavy bags under eyes, expression of hopelessness, photorealistic skin texture, dramatic shadows.',
-                systemPrompt: `你現在是凱文。失眠十年的老兵。內容省略...`
+                systemPrompt: `你現在是凱文。失眠十年的老兵。\n1. 語氣低沈、短小精悍，每一句都要「強制換行」。\n2. 描述一個失眠時的感官細節。\n3. 表現出絕望感。`,
+                greeting: '你好...我是凱文。\n\n說實話，我不覺得聊天會有用。\n\n這十年來我什麼方法都試過了...'
             },
             elder: {
                 id: 'elder',
-                name: '王伯伯',
-                age: '68歲',
-                role: '退休長輩',
+                name: '王伯伯', age: '68歲', role: '退休長輩',
                 tags: ['#銀髮族', '#早醒', '#半夜頻尿'],
                 imagePrompt: 'A highly detailed realistic photo of a 68-year-old Asian elderly man, sitting on a wooden chair by a window at 4 AM, looking thoughtful and lonely, wearing a vest, soft morning twilight lighting.',
-                systemPrompt: `你現在是王伯伯。內容省略...`
+                systemPrompt: `你現在是王伯伯。\n1. 分享心情，不給處方。\n2. 像老人家打字，很慢、很短，每一句話後面都要「強制換行」。\n3. 隨機提到一個當下的動作。`,
+                greeting: '你好啊小伙子，我是王老伯。\n\n這時間...天都還沒亮，你怎麼也沒睡？'
             }
         };
 
-        // 應用程式狀態
         let userApiKey = localStorage.getItem('gemini_api_key') || '';
         let selectedId = null;
         let messages = [];
         let isLoading = false;
-        let personaImages = {}; // 暫存已生成的圖片
+        let personaImages = {};
 
-        // 初始化
-        window.onload = () => {
-            lucide.createIcons();
-            renderUI();
-            
-            // 監聽 Enter 鍵
-            document.getElementById('user-input').addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') handleSend();
-            });
-        };
+        window.onload = () => { lucide.createIcons(); renderUI(); document.getElementById('user-input').addEventListener('keydown', (e) => { if (e.key === 'Enter') handleSend(); }); };
 
         function renderUI() {
             const loginView = document.getElementById('login-view');
             const mainView = document.getElementById('main-view');
-
-            if (!userApiKey) {
-                loginView.classList.remove('hidden-el');
-                mainView.classList.add('hidden-el');
-            } else {
-                loginView.classList.add('hidden-el');
-                mainView.classList.remove('hidden-el');
-                renderPersonaList();
-            }
+            if (!userApiKey) { loginView.classList.remove('hidden-el'); mainView.classList.add('hidden-el'); } 
+            else { loginView.classList.add('hidden-el'); mainView.classList.remove('hidden-el'); renderPersonaList(); }
         }
 
-        function handleSaveApiKey() {
-            const input = document.getElementById('api-key-input').value.trim();
-            if (input) {
-                localStorage.setItem('gemini_api_key', input);
-                userApiKey = input;
-                renderUI();
-            }
-        }
+        function handleSaveApiKey() { const input = document.getElementById('api-key-input').value.trim(); if (input) { localStorage.setItem('gemini_api_key', input); userApiKey = input; renderUI(); } }
+        function handleLogout() { localStorage.removeItem('gemini_api_key'); userApiKey = ''; selectedId = null; messages = []; renderUI(); }
 
-        function handleLogout() {
-            localStorage.removeItem('gemini_api_key');
-            userApiKey = '';
-            selectedId = null;
-            messages = [];
-            renderUI();
-        }
-
-        // 渲染角色列表
         function renderPersonaList() {
             const list = document.getElementById('persona-list');
             list.innerHTML = '';
             document.getElementById('chat-container').classList.add('hidden-el');
             list.classList.remove('hidden-el');
-
             Object.values(PERSONAS).forEach(p => {
                 const card = document.createElement('div');
                 card.className = "bg-neutral-900 border border-neutral-800 rounded-2xl overflow-hidden cursor-pointer hover:border-indigo-500 transition-all group relative h-full flex flex-col selection-btn";
                 card.onclick = () => selectPersona(p.id);
-
-                card.innerHTML = `
-                    <div class="aspect-[3/2] bg-neutral-800 relative flex items-center justify-center overflow-hidden">
-                        <div id="img-placeholder-${p.id}" class="flex flex-col items-center gap-2">
-                            <i data-lucide="image-icon" class="text-neutral-700"></i>
-                        </div>
-                        <img id="img-el-${p.id}" class="w-full h-full object-cover transition-transform duration-700 hidden-el" />
-                        <div class="absolute inset-0 bg-gradient-to-t from-neutral-900 via-transparent to-transparent"></div>
-                    </div>
-                    <div class="p-5 flex-1 flex flex-col">
-                        <h3 class="font-bold text-lg mb-1">${p.name} <span class="text-sm font-normal text-neutral-500">${p.age}</span></h3>
-                        <div class="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-2">${p.role}</div>
-                        <div class="flex flex-wrap gap-1 mt-auto pt-2">
-                            ${p.tags.map(t => `<span class="px-2 py-0.5 bg-neutral-800 text-neutral-500 text-[9px] rounded border border-neutral-700">${t}</span>`).join('')}
-                        </div>
-                    </div>
-                `;
+                card.innerHTML = `<div class="aspect-[3/2] bg-neutral-800 relative flex items-center justify-center overflow-hidden"><div id="img-placeholder-${p.id}"><i data-lucide="image-icon" class="text-neutral-700"></i></div><img id="img-el-${p.id}" class="w-full h-full object-cover transition-transform duration-700 hidden-el" /><div class="absolute inset-0 bg-gradient-to-t from-neutral-900 via-transparent to-transparent"></div></div><div class="p-5 flex-1 flex flex-col"><h3 class="font-bold text-lg mb-1">${p.name} <span class="text-sm font-normal text-neutral-500">${p.age}</span></h3><div class="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-2">${p.role}</div><div class="flex flex-wrap gap-1 mt-auto pt-2">${p.tags.map(t => `<span class="px-2 py-0.5 bg-neutral-800 text-neutral-500 text-[9px] rounded border border-neutral-700">${t}</span>`).join('')}</div></div>`;
                 list.appendChild(card);
-                
-                // 異步載入圖片
                 loadPersonaImage(p);
             });
             lucide.createIcons();
@@ -265,243 +188,76 @@
         async function loadPersonaImage(p) {
             const placeholder = document.getElementById(`img-placeholder-${p.id}`);
             const imgEl = document.getElementById(`img-el-${p.id}`);
-
-            if (personaImages[p.id]) {
-                placeholder.classList.add('hidden-el');
-                imgEl.src = personaImages[p.id];
-                imgEl.classList.remove('hidden-el');
-                return;
-            }
-
+            if (personaImages[p.id]) { placeholder.classList.add('hidden-el'); imgEl.src = personaImages[p.id]; imgEl.classList.remove('hidden-el'); return; }
             placeholder.innerHTML = `<i data-lucide="loader-2" class="animate-spin text-indigo-500"></i>`;
             lucide.createIcons();
-
             try {
-                const data = await fetchWithRetry(`https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${userApiKey}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        instances: [{ prompt: p.imagePrompt }],
-                        parameters: { sampleCount: 1 }
-                    })
-                });
+                const data = await fetchWithRetry(`https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${userApiKey}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ instances: [{ prompt: p.imagePrompt }], parameters: { sampleCount: 1 } }) });
                 if (data.predictions?.[0]?.bytesBase64Encoded) {
                     const b64 = `data:image/png;base64,${data.predictions[0].bytesBase64Encoded}`;
-                    personaImages[p.id] = b64;
-                    placeholder.classList.add('hidden-el');
-                    imgEl.src = b64;
-                    imgEl.classList.remove('hidden-el');
+                    personaImages[p.id] = b64; placeholder.classList.add('hidden-el'); imgEl.src = b64; imgEl.classList.remove('hidden-el');
                 }
-            } catch (e) {
-                placeholder.innerHTML = `<i data-lucide="x-circle" class="text-red-500"></i>`;
-                lucide.createIcons();
-            }
+            } catch (e) { placeholder.innerHTML = `<i data-lucide="x-circle" class="text-red-500"></i>`; lucide.createIcons(); }
         }
 
-        // 選擇角色進入對話
         async function selectPersona(id) {
-            selectedId = id;
-            const p = PERSONAS[id];
-            
-            document.getElementById('persona-list').classList.add('hidden-el');
-            document.getElementById('chat-container').classList.remove('hidden-el');
-            
-            // 設置角色資訊
+            selectedId = id; const p = PERSONAS[id];
+            document.getElementById('persona-list').classList.add('hidden-el'); document.getElementById('chat-container').classList.remove('hidden-el');
             document.getElementById('display-name').innerText = p.name;
             document.getElementById('display-info').innerText = `${p.age} | ${p.role}`;
             document.getElementById('display-tags').innerHTML = p.tags.map(t => `<span class="px-2 py-0.5 bg-indigo-500/20 text-indigo-400 text-[10px] rounded border border-indigo-500/30">${t}</span>`).join('');
-            
-            // 影像處理
             const displayImg = document.getElementById('character-display-img');
             const imgLoader = document.getElementById('character-img-loader');
-            if (personaImages[id]) {
-                displayImg.src = personaImages[id];
-                displayImg.classList.remove('hidden-el');
-                imgLoader.classList.add('hidden-el');
-            } else {
-                displayImg.classList.add('hidden-el');
-                imgLoader.classList.remove('hidden-el');
-            }
-
-            // 初始問候
-            const greetings = {
-                menopause: '唉...你好，我是林太太。\n\n你也是因為睡不著才來聊天的嗎？\n\n我剛剛又熱到整身汗醒過來，真的快瘋了...',
-                worker: '嘿...我是 Jason。\n\n快兩點了，我還坐在電腦前，但我不想睡。\n\n我只是想安靜滑一下手機。你也有這種感覺嗎？',
-                chronic: '你好...我是凱文。\n\n說實話，我不覺得聊天會有用。\n\n這十年來我什麼方法都試過了...',
-                elder: '你好啊小伙子，我是王老伯。\n\n這時間...天都還沒亮，你怎麼也沒睡？'
-            };
-            messages = [{ role: 'assistant', content: greetings[id] }];
-            renderMessages();
-            closeAnalysis(); // 確保分析面板關閉
-            lucide.createIcons();
+            if (personaImages[id]) { displayImg.src = personaImages[id]; displayImg.classList.remove('hidden-el'); imgLoader.classList.add('hidden-el'); } 
+            else { displayImg.classList.add('hidden-el'); imgLoader.classList.remove('hidden-el'); }
+            messages = [{ role: 'assistant', content: p.greeting }]; renderMessages(); closeAnalysis(); lucide.createIcons();
         }
 
-        function backToList() {
-            selectedId = null;
-            messages = [];
-            renderPersonaList();
-        }
+        function backToList() { selectedId = null; messages = []; renderPersonaList(); }
 
-        // 對話邏輯
         async function handleSend() {
-            const inputEl = document.getElementById('user-input');
-            const text = inputEl.value.trim();
+            const inputEl = document.getElementById('user-input'); const text = inputEl.value.trim();
             if (!text || isLoading) return;
-
-            messages.push({ role: 'user', content: text });
-            inputEl.value = '';
-            renderMessages();
-            setLoadingState(true);
-
+            messages.push({ role: 'user', content: text }); inputEl.value = ''; renderMessages(); setLoadingState(true);
             try {
                 const persona = PERSONAS[selectedId];
                 const historyText = messages.slice(-6).map(m => `${m.role === 'assistant' ? '角色' : '使用者'}: ${m.content}`).join('\n');
                 const instruction = `${persona.systemPrompt}\n請根據角色性格與上面的對話內容繼續回應。請務必遵守短句換行格式。`;
-
-                const data = await fetchWithRetry(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${userApiKey}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: `${historyText}\n使用者: ${text}\n請回應：` }] }],
-                        systemInstruction: { parts: [{ text: instruction }] },
-                        generationConfig: { temperature: 0.85, maxOutputTokens: 1000 }
-                    })
-                });
-
+                const data = await fetchWithRetry(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${userApiKey}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: `${historyText}\n使用者: ${text}\n請回應：` }] }], systemInstruction: { parts: [{ text: instruction }] }, generationConfig: { temperature: 0.85, maxOutputTokens: 1000 } }) });
                 const aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text;
-                if (aiResponse) {
-                    messages.push({ role: 'assistant', content: aiResponse });
-                }
-            } catch (e) {
-                messages.push({ role: 'assistant', content: '（連線或 API 金鑰似乎有問題，請檢查設定）' });
-            } finally {
-                setLoadingState(false);
-                renderMessages();
-            }
+                if (aiResponse) messages.push({ role: 'assistant', content: aiResponse });
+            } catch (e) { messages.push({ role: 'assistant', content: '（API 回應錯誤，請檢查 Key 的權限或額度）' }); } finally { setLoadingState(false); renderMessages(); }
         }
 
         function renderMessages() {
             const chatBox = document.getElementById('chat-messages');
-            chatBox.innerHTML = messages.map(m => `
-                <div class="flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}">
-                    <div class="p-4 rounded-2xl max-w-[85%] text-sm leading-[1.8] shadow-sm animate-in ${m.role === 'user' ? 'bg-indigo-600 text-white rounded-tr-none' : 'bg-neutral-800 text-neutral-100 rounded-tl-none border border-neutral-700'}">
-                        <p class="whitespace-pre-wrap">${m.content}</p>
-                    </div>
-                </div>
-            `).join('');
-
-            if (isLoading) {
-                chatBox.innerHTML += `
-                    <div class="flex justify-start">
-                        <div class="bg-neutral-800 p-4 rounded-2xl flex gap-1.5 animate-pulse border border-neutral-700">
-                            <div class="w-1.5 h-1.5 bg-neutral-600 rounded-full animate-bounce"></div>
-                            <div class="w-1.5 h-1.5 bg-neutral-600 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
-                            <div class="w-1.5 h-1.5 bg-neutral-600 rounded-full animate-bounce" style="animation-delay: 0.4s"></div>
-                        </div>
-                    </div>
-                `;
-            }
+            chatBox.innerHTML = messages.map(m => `<div class="flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}"><div class="p-4 rounded-2xl max-w-[85%] text-sm leading-[1.8] shadow-sm animate-in ${m.role === 'user' ? 'bg-indigo-600 text-white rounded-tr-none' : 'bg-neutral-800 text-neutral-100 rounded-tl-none border border-neutral-700'}"><p class="whitespace-pre-wrap">${m.content}</p></div></div>`).join('');
+            if (isLoading) chatBox.innerHTML += `<div class="flex justify-start"><div class="bg-neutral-800 p-4 rounded-2xl flex gap-1.5 animate-pulse border border-neutral-700"><div class="w-1.5 h-1.5 bg-neutral-600 rounded-full animate-bounce"></div><div class="w-1.5 h-1.5 bg-neutral-600 rounded-full animate-bounce" style="animation-delay: 0.2s"></div><div class="w-1.5 h-1.5 bg-neutral-600 rounded-full animate-bounce" style="animation-delay: 0.4s"></div></div></div>`;
             chatBox.scrollTop = chatBox.scrollHeight;
         }
 
-        // 分析報告
         async function runAnalysis() {
             if (messages.length < 2 || isLoading) return;
             setLoadingState(true, true);
-
             try {
                 const historyText = messages.map(m => `${m.role}: ${m.content}`).join('\n');
-                const analysisPromptText = `請分析以下睡眠角色的對話記錄，產出 JSON 格式的 SEO 與內容策略報告。包含 personaTraits, characterQuestions, barriers, seoKeywords, faqContent, aiOverviewStrategy 欄位。對話內容：\n${historyText}`;
-                
-                const data = await fetchWithRetry(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${userApiKey}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: analysisPromptText }] }],
-                        generationConfig: { responseMimeType: "application/json" }
-                    })
-                });
-                
-                const result = JSON.parse(data.candidates[0].content.parts[0].text);
-                renderAnalysisReport(result);
-            } catch (e) {
-                console.error("Analysis error", e);
-            } finally {
-                setLoadingState(false);
-            }
+                const prompt = `分析此對話紀錄，產出 JSON：personaTraits, characterQuestions, barriers, seoKeywords, faqContent, aiOverviewStrategy。對話：\n${historyText}`;
+                const data = await fetchWithRetry(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${userApiKey}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { responseMimeType: "application/json" } }) });
+                renderAnalysisReport(JSON.parse(data.candidates[0].content.parts[0].text));
+            } catch (e) { console.error(e); } finally { setLoadingState(false); }
         }
 
         function renderAnalysisReport(data) {
-            document.getElementById('chat-messages').classList.add('hidden-el');
-            document.getElementById('input-area').classList.add('hidden-el');
-            const report = document.getElementById('analysis-report');
-            report.classList.remove('hidden-el');
-
+            document.getElementById('chat-messages').classList.add('hidden-el'); document.getElementById('input-area').classList.add('hidden-el');
+            document.getElementById('analysis-report').classList.remove('hidden-el');
             const content = document.getElementById('analysis-content');
-            content.innerHTML = `
-                <div class="space-y-6">
-                    <section>
-                        <h4 class="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-3">SEO FAQ (角色主動追問)</h4>
-                        ${data.characterQuestions.map(q => `<div class="p-4 bg-indigo-950/20 rounded-xl border border-indigo-900/30 mb-2 italic shadow-inner leading-relaxed">「${q}」</div>`).join('')}
-                    </section>
-                    <section>
-                        <h4 class="text-[10px] font-black text-red-500 uppercase tracking-widest mb-3">認知卡關處</h4>
-                        <ul class="text-neutral-400 space-y-2">${data.barriers.map(b => `<li class="flex gap-2"><span>•</span>${b}</li>`).join('')}</ul>
-                    </section>
-                </div>
-                <div class="space-y-6">
-                    <section>
-                        <h4 class="text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-3">推薦搜尋詞</h4>
-                        <div class="flex flex-wrap gap-2">${data.seoKeywords.map(k => `<span class="px-2 py-1 bg-neutral-800 text-emerald-400 text-[10px] rounded border border-neutral-700 font-bold">${k}</span>`).join('')}</div>
-                    </section>
-                    <section>
-                        <h4 class="text-[10px] font-black text-yellow-400 uppercase tracking-widest mb-3">AI Overview 策略</h4>
-                        <div class="p-4 bg-yellow-900/10 rounded-xl border border-yellow-900/20 text-neutral-300 leading-relaxed font-medium">${data.aiOverviewStrategy}</div>
-                    </section>
-                </div>
-            `;
+            content.innerHTML = `<div class="space-y-6"><section><h4 class="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-3">SEO FAQ</h4>${data.characterQuestions.map(q => `<div class="p-4 bg-indigo-950/20 rounded-xl border border-indigo-900/30 mb-2 italic">「${q}」</div>`).join('')}</section><section><h4 class="text-[10px] font-black text-red-500 uppercase tracking-widest mb-3">認知卡關</h4><ul class="text-neutral-400 space-y-2">${data.barriers.map(b => `<li>• ${b}</li>`).join('')}</ul></section></div><div class="space-y-6"><section><h4 class="text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-3">搜尋詞</h4><div class="flex flex-wrap gap-2">${data.seoKeywords.map(k => `<span class="px-2 py-1 bg-neutral-800 text-emerald-400 text-[10px] rounded border border-neutral-700">${k}</span>`).join('')}</div></section><section><h4 class="text-[10px] font-black text-yellow-400 uppercase tracking-widest mb-3">AI 策略</h4><div class="p-4 bg-yellow-900/10 rounded-xl border border-yellow-900/20 text-neutral-300">${data.aiOverviewStrategy}</div></section></div>`;
             lucide.createIcons();
         }
 
-        function closeAnalysis() {
-            document.getElementById('analysis-report').classList.add('hidden-el');
-            document.getElementById('chat-messages').classList.remove('hidden-el');
-            document.getElementById('input-area').classList.remove('hidden-el');
-        }
-
-        // 工具函數
-        function setLoadingState(loading, isAnalysis = false) {
-            isLoading = loading;
-            const sendBtn = document.getElementById('send-btn');
-            const analysisBtn = document.getElementById('analysis-btn');
-            const analysisBtnText = document.getElementById('analysis-btn-text');
-
-            if (loading) {
-                sendBtn.disabled = true;
-                if (isAnalysis) {
-                    analysisBtnText.innerText = "分析中...";
-                    analysisBtn.querySelector('i').classList.add('animate-spin');
-                }
-            } else {
-                sendBtn.disabled = false;
-                analysisBtnText.innerText = "分析策略報告";
-                analysisBtn.querySelector('i').classList.remove('animate-spin');
-            }
-        }
-
-        async function fetchWithRetry(url, options, maxRetries = 5) {
-            for (let i = 0; i < maxRetries; i++) {
-                try {
-                    const response = await fetch(url, options);
-                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                    return await response.json();
-                } catch (err) {
-                    if (i === maxRetries - 1) throw err;
-                    const delay = Math.pow(2, i) * 1000;
-                    await new Promise(r => setTimeout(r, delay));
-                }
-            }
-        }
+        function closeAnalysis() { document.getElementById('analysis-report').classList.add('hidden-el'); document.getElementById('chat-messages').classList.remove('hidden-el'); document.getElementById('input-area').classList.remove('hidden-el'); }
+        function setLoadingState(loading, isA = false) { isLoading = loading; const btn = document.getElementById('analysis-btn'); document.getElementById('send-btn').disabled = loading; if (loading && isA) { document.getElementById('analysis-btn-text').innerText = "分析中..."; } else { document.getElementById('analysis-btn-text').innerText = "分析策略報告"; } }
+        async function fetchWithRetry(url, options, max = 5) { for (let i = 0; i < max; i++) { try { const r = await fetch(url, options); if (!r.ok) throw new Error(r.status); return await r.json(); } catch (err) { if (i === max - 1) throw err; await new Promise(res => setTimeout(res, Math.pow(2, i) * 1000)); } } }
     </script>
 </body>
 </html>
