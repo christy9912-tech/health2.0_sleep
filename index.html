@@ -51,7 +51,7 @@
                 <!-- 版本時間戳記 -->
                 <div class="mt-8 pt-6 border-t border-neutral-800/50">
                     <p class="text-[9px] text-center text-neutral-700 font-mono tracking-widest opacity-50 uppercase">
-                        Build Version: 20260101.1430
+                        Build Version: 20260101.1445
                     </p>
                 </div>
             </div>
@@ -237,9 +237,16 @@
         function backToList() { selectedId = null; messages = []; renderPersonaList(); }
 
         async function handleSend() {
-            const inputEl = document.getElementById('user-input'); const text = inputEl.value.trim();
+            const inputEl = document.getElementById('user-input'); 
+            const text = inputEl.value.trim();
             if (!text || isLoading) return;
-            messages.push({ role: 'user', content: text }); inputEl.value = ''; renderMessages(); setLoadingState(true);
+
+            // 修復：送出後立即清空輸入框文字
+            inputEl.value = '';
+
+            messages.push({ role: 'user', content: text }); 
+            renderMessages(); 
+            setLoadingState(true);
             try {
                 const persona = PERSONAS[selectedId];
                 const historyText = messages.slice(-6).map(m => `${m.role === 'assistant' ? '角色' : '使用者'}: ${m.content}`).join('\n');
