@@ -20,7 +20,8 @@
         .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #262626; border-radius: 10px; }
         
-        .selection-btn:hover img { transform: scale(1.05); }
+        .selection-btn:hover .svg-container { transform: scale(1.05); }
+        .svg-container { transition: transform 0.7s ease-in-out; }
         
         /* 隱藏元素用的 Helper */
         .hidden-el { display: none !important; }
@@ -51,7 +52,7 @@
                 <!-- 版本時間戳記 -->
                 <div class="mt-8 pt-6 border-t border-neutral-800/50">
                     <p class="text-[9px] text-center text-neutral-700 font-mono tracking-widest opacity-50 uppercase">
-                        Build Version: 20260101.1445
+                        Build Version: 20260101.1510 (Embedded SVG Edition)
                     </p>
                 </div>
             </div>
@@ -79,17 +80,13 @@
                 <!-- 左側角色資訊 -->
                 <div class="lg:col-span-4 flex flex-col gap-4">
                     <div class="bg-neutral-900 border border-neutral-800 rounded-3xl overflow-hidden shadow-2xl relative">
-                        <div class="aspect-[4/5] bg-neutral-800 relative">
-                            <div id="character-img-loader" class="absolute inset-0 flex items-center justify-center bg-neutral-800">
-                                <i data-lucide="loader-2" class="animate-spin text-indigo-500"></i>
-                            </div>
-                            <img id="character-display-img" class="w-full h-full object-cover hidden-el" alt="Character"/>
-                            <div class="absolute inset-0 bg-gradient-to-t from-neutral-950 via-transparent to-transparent opacity-80"></div>
-                            <div class="absolute bottom-6 left-6 pr-6">
-                                <h2 id="display-name" class="text-3xl font-black"></h2>
-                                <p id="display-info" class="text-neutral-400 text-sm font-medium mb-2"></p>
-                                <div id="display-tags" class="flex flex-wrap gap-2"></div>
-                            </div>
+                        <div class="aspect-[4/5] bg-neutral-800 relative" id="character-svg-hero">
+                            <!-- SVG 會被注入到這裡 -->
+                        </div>
+                        <div class="absolute bottom-6 left-6 pr-6 pointer-events-none">
+                            <h2 id="display-name" class="text-3xl font-black"></h2>
+                            <p id="display-info" class="text-neutral-400 text-sm font-medium mb-2"></p>
+                            <div id="display-tags" class="flex flex-wrap gap-2"></div>
                         </div>
                     </div>
                     <button id="analysis-btn" onclick="runAnalysis()" class="w-full py-4 bg-indigo-600 text-white rounded-2xl font-black text-sm hover:bg-indigo-500 transition-all flex items-center justify-center gap-3 shadow-xl shadow-indigo-500/10 disabled:opacity-50">
@@ -122,12 +119,72 @@
     </div>
 
     <script>
+        // SVG 素材定義
+        const PERSONA_SVGS = {
+            menopause: `
+                <svg viewBox="0 0 400 500" class="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="400" height="500" fill="#171717"/>
+                    <defs>
+                        <radialGradient id="grad-m" cx="50%" cy="50%" r="50%">
+                            <stop offset="0%" style="stop-color:#4c1d95;stop-opacity:0.3" />
+                            <stop offset="100%" style="stop-color:#171717;stop-opacity:0" />
+                        </radialGradient>
+                    </defs>
+                    <rect width="400" height="500" fill="url(#grad-m)"/>
+                    <circle cx="200" cy="180" r="80" fill="#262626"/>
+                    <path d="M120 180 Q120 100 200 100 Q280 100 280 180" stroke="#444" stroke-width="2" fill="none" opacity="0.5"/>
+                    <path d="M170 180 Q185 175 200 180" stroke="#ef4444" stroke-width="1" fill="none" opacity="0.6"/>
+                    <circle cx="175" cy="195" r="3" fill="#ef4444" opacity="0.4"/>
+                    <circle cx="225" cy="195" r="3" fill="#ef4444" opacity="0.4"/>
+                    <path d="M150 350 L250 350 L280 500 L120 500 Z" fill="#1f1f1f"/>
+                </svg>`,
+            worker: `
+                <svg viewBox="0 0 400 500" class="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="400" height="500" fill="#0a0a0a"/>
+                    <rect x="100" y="150" width="200" height="150" rx="10" fill="#171717" stroke="#4f46e5" stroke-width="1" opacity="0.3"/>
+                    <defs>
+                        <linearGradient id="blue-glow" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" style="stop-color:#6366f1;stop-opacity:0.2" />
+                            <stop offset="100%" style="stop-color:#6366f1;stop-opacity:0" />
+                        </linearGradient>
+                    </defs>
+                    <rect x="0" y="300" width="400" height="200" fill="url(#blue-glow)"/>
+                    <circle cx="200" cy="220" r="60" fill="#1f1f1f"/>
+                    <rect x="170" y="210" width="25" height="15" rx="2" fill="none" stroke="#6366f1" stroke-width="1"/>
+                    <rect x="205" y="210" width="25" height="15" rx="2" fill="none" stroke="#6366f1" stroke-width="1"/>
+                    <path d="M195 217 L205 217" stroke="#6366f1" stroke-width="1"/>
+                </svg>`,
+            chronic: `
+                <svg viewBox="0 0 400 500" class="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="400" height="500" fill="#0f172a"/>
+                    <path d="M50 400 Q200 380 350 400" stroke="#334155" stroke-width="2" fill="none"/>
+                    <circle cx="200" cy="150" r="70" fill="#1e293b"/>
+                    <ellipse cx="200" cy="165" rx="40" ry="10" fill="none" stroke="#64748b" stroke-width="1" opacity="0.5"/>
+                    <path d="M180 145 Q200 135 220 145" stroke="#94a3b8" stroke-width="1" fill="none"/>
+                    <rect x="150" y="420" width="100" height="80" fill="#1e293b"/>
+                </svg>`,
+            elder: `
+                <svg viewBox="0 0 400 500" class="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="400" height="500" fill="#1c1917"/>
+                    <defs>
+                        <linearGradient id="twilight" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" style="stop-color:#44403c;stop-opacity:0.1" />
+                            <stop offset="100%" style="stop-color:#78350f;stop-opacity:0.1" />
+                        </linearGradient>
+                    </defs>
+                    <rect width="400" height="500" fill="url(#twilight)"/>
+                    <path d="M150 200 L150 450 M250 200 L250 450" stroke="#44403c" stroke-width="8"/>
+                    <circle cx="200" cy="180" r="65" fill="#292524"/>
+                    <path d="M170 180 Q200 170 230 180" stroke="#57534e" stroke-width="2" fill="none"/>
+                    <path d="M190 230 L210 230" stroke="#57534e" stroke-width="1"/>
+                </svg>`
+        };
+
         const PERSONAS = {
             menopause: {
                 id: 'menopause',
                 name: '林太太', age: '52歲', role: '更年期女性',
                 tags: ['#更年期', '#盜汗', '#情緒起伏'],
-                imagePrompt: 'A photorealistic cinematic portrait of a 52-year-old East Asian woman, extremely exhausted, sitting in a dimly lit bedroom, showing realistic skin texture, 8k resolution.',
                 systemPrompt: `你現在是林太太。正處於更年期失眠。\n1. 絕對不要給予任何醫療建議。\n2. 提到的任何補品都必須以「聽說」的角度出發。\n3. 每一段對話請控制在 3 句以內，每一句話後面都要「強制換行」。\n4. 每次回應都要包含一個隨機的當下感受。`,
                 greeting: '唉...你好，我是林太太。\n\n你也是因為睡不著才來聊天的嗎？\n\n我剛剛又熱到整身汗醒過來，真的快瘋了...'
             },
@@ -135,7 +192,6 @@
                 id: 'worker',
                 name: 'Jason', age: '38歲', role: '資深工程主管',
                 tags: ['#報復性熬夜', '#資深主管', '#藍光暴露'],
-                imagePrompt: 'A photorealistic close-up photo of a 38-year-old Asian man with glasses in a dark home office at 2 AM, face illuminated by blue light, cinematic realism, 8k.',
                 systemPrompt: `你現在是 Jason，38歲主管。深受報復性熬夜困擾。\n1. 說話要短，不要超過 3 句話。\n2. 頻繁使用「換行」。\n3. 語氣帶點無奈與理性的疲憊感。\n4. 隨機提到一個職場細節。`,
                 greeting: '嘿...我是 Jason。\n\n快兩點了，我還坐在電腦前，但我不想睡。\n\n我只是想安靜滑一下手機。你也有這種感覺嗎？'
             },
@@ -143,7 +199,6 @@
                 id: 'chronic',
                 name: '凱文', age: '40歲', role: '長期失眠者',
                 tags: ['#長期失眠', '#藥物焦慮', '#床鋪恐懼'],
-                imagePrompt: 'A high-definition realistic portrait of a 40-year-old Asian man staring at the ceiling in the dark, heavy bags under eyes, hopeless expression, 8k.',
                 systemPrompt: `你現在是凱文。失眠十年的老兵。\n1. 語氣低沈、短小精悍，每一句都要「強制換行」。\n2. 描述一個失眠時的感官細節。\n3. 表現出絕望感。`,
                 greeting: '你好...我是凱文。\n\n說實話，我不覺得聊天會有用。\n\n這時間我都在聽心跳聲...',
             },
@@ -151,7 +206,6 @@
                 id: 'elder',
                 name: '王伯伯', age: '68歲', role: '退休長輩',
                 tags: ['#銀髮族', '#早醒', '#半夜頻尿'],
-                imagePrompt: 'A highly detailed realistic photo of a 68-year-old Asian elderly man, sitting on a wooden chair by a window at 4 AM, looking thoughtful and lonely.',
                 systemPrompt: `你現在是王伯伯。\n1. 分享心情，不給處方。\n2. 像老人家打字，很慢、很短，每一句話後面都要「強制換行」。\n3. 隨機提到一個當下的動作。`,
                 greeting: '你好啊小伙子，我是王老伯。\n\n這時間...天都還沒亮，你怎麼也沒睡？'
             }
@@ -161,7 +215,6 @@
         let selectedId = null;
         let messages = [];
         let isLoading = false;
-        let personaImages = {};
 
         window.onload = () => { lucide.createIcons(); renderUI(); document.getElementById('user-input').addEventListener('keydown', (e) => { if (e.key === 'Enter') handleSend(); }); };
 
@@ -184,69 +237,41 @@
                 const card = document.createElement('div');
                 card.className = "bg-neutral-900 border border-neutral-800 rounded-2xl overflow-hidden cursor-pointer hover:border-indigo-500 transition-all group relative h-full flex flex-col selection-btn";
                 card.onclick = () => selectPersona(p.id);
-                card.innerHTML = `<div class="aspect-[3/2] bg-neutral-800 relative flex items-center justify-center overflow-hidden"><div id="img-placeholder-${p.id}"><i data-lucide="image-icon" class="text-neutral-700"></i></div><img id="img-el-${p.id}" class="w-full h-full object-cover transition-transform duration-700 hidden-el" /><div class="absolute inset-0 bg-gradient-to-t from-neutral-900 via-transparent to-transparent"></div></div><div class="p-5 flex-1 flex flex-col"><h3 class="font-bold text-lg mb-1">${p.name} <span class="text-sm font-normal text-neutral-500">${p.age}</span></h3><div class="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-2">${p.role}</div><div class="flex flex-wrap gap-1 mt-auto pt-2">${p.tags.map(t => `<span class="px-2 py-0.5 bg-neutral-800 text-neutral-500 text-[9px] rounded border border-neutral-700">${t}</span>`).join('')}</div></div>`;
+                card.innerHTML = `
+                    <div class="aspect-[3/2] bg-neutral-800 relative overflow-hidden svg-container">
+                        ${PERSONA_SVGS[p.id]}
+                        <div class="absolute inset-0 bg-gradient-to-t from-neutral-900 via-transparent to-transparent opacity-60"></div>
+                    </div>
+                    <div class="p-5 flex-1 flex flex-col">
+                        <h3 class="font-bold text-lg mb-1">${p.name} <span class="text-sm font-normal text-neutral-500">${p.age}</span></h3>
+                        <div class="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-2">${p.role}</div>
+                        <div class="flex flex-wrap gap-1 mt-auto pt-2">${p.tags.map(t => `<span class="px-2 py-0.5 bg-neutral-800 text-neutral-500 text-[9px] rounded border border-neutral-700">${t}</span>`).join('')}</div>
+                    </div>
+                `;
                 list.appendChild(card);
-                loadPersonaImage(p);
             });
             lucide.createIcons();
         }
 
-        async function loadPersonaImage(p) {
-            const placeholder = document.getElementById(`img-placeholder-${p.id}`);
-            const imgEl = document.getElementById(`img-el-${p.id}`);
-            if (personaImages[p.id]) { placeholder.classList.add('hidden-el'); imgEl.src = personaImages[p.id]; imgEl.classList.remove('hidden-el'); return; }
-            placeholder.innerHTML = `<i data-lucide="loader-2" class="animate-spin text-indigo-500"></i>`;
-            lucide.createIcons();
-            try {
-                const data = await fetchWithRetry(`https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${userApiKey}`, { 
-                    method: 'POST', 
-                    headers: { 'Content-Type': 'application/json' }, 
-                    body: JSON.stringify({ 
-                        instances: [{ prompt: p.imagePrompt }], 
-                        parameters: { sampleCount: 1 } 
-                    }) 
-                });
-                if (data.predictions && data.predictions[0]?.bytesBase64Encoded) {
-                    const b64 = `data:image/png;base64,${data.predictions[0].bytesBase64Encoded}`;
-                    personaImages[p.id] = b64; placeholder.classList.add('hidden-el'); imgEl.src = b64; imgEl.classList.remove('hidden-el');
-                }
-            } catch (e) { 
-                console.error("Imagen API Error Details:", e.message);
-                if (e.message.includes("billed users")) {
-                    placeholder.innerHTML = `<div class="text-[9px] text-red-400/80 p-2 text-center leading-tight">API 限制：<br/>需在 Google AI Studio<br/>開啟計費功能</div>`;
-                } else {
-                    placeholder.innerHTML = `<i data-lucide="x-circle" class="text-red-500"></i>`; 
-                }
-                lucide.createIcons(); 
-            }
-        }
-
-        async function selectPersona(id) {
+        function selectPersona(id) {
             selectedId = id; const p = PERSONAS[id];
             document.getElementById('persona-list').classList.add('hidden-el'); document.getElementById('chat-container').classList.remove('hidden-el');
             document.getElementById('display-name').innerText = p.name;
             document.getElementById('display-info').innerText = `${p.age} | ${p.role}`;
             document.getElementById('display-tags').innerHTML = p.tags.map(t => `<span class="px-2 py-0.5 bg-indigo-500/20 text-indigo-400 text-[10px] rounded border border-indigo-500/30">${t}</span>`).join('');
-            const displayImg = document.getElementById('character-display-img');
-            const imgLoader = document.getElementById('character-img-loader');
-            if (personaImages[id]) { displayImg.src = personaImages[id]; displayImg.classList.remove('hidden-el'); imgLoader.classList.add('hidden-el'); } 
-            else { displayImg.classList.add('hidden-el'); imgLoader.classList.remove('hidden-el'); }
+            
+            document.getElementById('character-svg-hero').innerHTML = PERSONA_SVGS[id];
+            
             messages = [{ role: 'assistant', content: p.greeting }]; renderMessages(); closeAnalysis(); lucide.createIcons();
         }
 
         function backToList() { selectedId = null; messages = []; renderPersonaList(); }
 
         async function handleSend() {
-            const inputEl = document.getElementById('user-input'); 
-            const text = inputEl.value.trim();
+            const inputEl = document.getElementById('user-input'); const text = inputEl.value.trim();
             if (!text || isLoading) return;
-
-            // 修復：送出後立即清空輸入框文字
             inputEl.value = '';
-
-            messages.push({ role: 'user', content: text }); 
-            renderMessages(); 
-            setLoadingState(true);
+            messages.push({ role: 'user', content: text }); renderMessages(); setLoadingState(true);
             try {
                 const persona = PERSONAS[selectedId];
                 const historyText = messages.slice(-6).map(m => `${m.role === 'assistant' ? '角色' : '使用者'}: ${m.content}`).join('\n');
@@ -285,22 +310,7 @@
 
         function closeAnalysis() { document.getElementById('analysis-report').classList.add('hidden-el'); document.getElementById('chat-messages').classList.remove('hidden-el'); document.getElementById('input-area').classList.remove('hidden-el'); }
         function setLoadingState(loading, isA = false) { isLoading = loading; const btn = document.getElementById('analysis-btn'); document.getElementById('send-btn').disabled = loading; if (loading && isA) { document.getElementById('analysis-btn-text').innerText = "分析中..."; } else { document.getElementById('analysis-btn-text').innerText = "分析策略報告"; } }
-        
-        async function fetchWithRetry(url, options, max = 5) { 
-            for (let i = 0; i < max; i++) { 
-                try { 
-                    const r = await fetch(url, options); 
-                    if (!r.ok) {
-                        const errorBody = await r.json().catch(() => ({}));
-                        throw new Error(`HTTP ${r.status}: ${JSON.stringify(errorBody)}`);
-                    }
-                    return await r.json(); 
-                } catch (err) { 
-                    if (i === max - 1) throw err; 
-                    await new Promise(res => setTimeout(res, Math.pow(2, i) * 1000)); 
-                } 
-            } 
-        }
+        async function fetchWithRetry(url, options, max = 5) { for (let i = 0; i < max; i++) { try { const r = await fetch(url, options); if (!r.ok) { const errorBody = await r.json().catch(() => ({})); throw new Error(`HTTP ${r.status}: ${JSON.stringify(errorBody)}`); } return await r.json(); } catch (err) { if (i === max - 1) throw err; await new Promise(res => setTimeout(res, Math.pow(2, i) * 1000)); } } }
     </script>
 </body>
 </html>
