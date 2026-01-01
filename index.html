@@ -51,7 +51,7 @@
                 <!-- 版本時間戳記 -->
                 <div class="mt-8 pt-6 border-t border-neutral-800/50">
                     <p class="text-[9px] text-center text-neutral-700 font-mono tracking-widest opacity-50 uppercase">
-                        Build Version: 20260101.1417
+                        Build Version: 20260101.1420
                     </p>
                 </div>
             </div>
@@ -202,8 +202,10 @@
                     method: 'POST', 
                     headers: { 'Content-Type': 'application/json' }, 
                     body: JSON.stringify({ 
-                        instances: [{ prompt: p.imagePrompt }], 
-                        parameters: { sampleCount: 1, aspectRatio: "1:1" } 
+                        // 修正：instances 在 Google AI Studio predict 端點預期為物件，而非數組
+                        instances: { prompt: p.imagePrompt }, 
+                        // 修正：移除可能不支援的 aspectRatio 參數
+                        parameters: { sampleCount: 1 } 
                     }) 
                 });
                 if (data.predictions && data.predictions[0]?.bytesBase64Encoded) {
