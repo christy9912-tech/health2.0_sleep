@@ -37,7 +37,7 @@
                 <button onclick="handleSaveApiKey()" class="w-full py-4 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-500 active:scale-[0.98] transition-all shadow-lg shadow-indigo-600/20">開始實驗</button>
                 <p class="text-[10px] text-center text-neutral-600 mt-6 underline italic"><a href="https://aistudio.google.com/" target="_blank">點此前往 Google AI Studio 申請免費金鑰</a></p>
                 <div class="mt-8 pt-6 border-t border-neutral-800/50">
-                    <p class="text-[9px] text-center text-neutral-700 font-mono tracking-widest opacity-50 uppercase">Build Version: 20260102.1400 (Alice Update)</p>
+                    <p class="text-[9px] text-center text-neutral-700 font-mono tracking-widest opacity-50 uppercase">Build Version: 20260101.2115 (Navigation Fix)</p>
                 </div>
             </div>
         </div>
@@ -48,8 +48,11 @@
                 <div><h1 class="text-lg sm:text-2xl font-black text-white flex items-center gap-2 tracking-tighter"><i data-lucide="moon" class="text-indigo-500 w-5 h-5 sm:w-6 sm:h-6"></i> 睡眠角色互動實驗室</h1></div>
                 <button onclick="handleLogout()" class="text-neutral-500 hover:text-red-400 p-2 transition-colors"><i data-lucide="log-out" size="18"></i></button>
             </header>
+            
+            <!-- 角色選擇列表 -->
             <div id="persona-list" class="flex-1 overflow-y-auto scroll-touch custom-scrollbar grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 py-4 items-start"></div>
 
+            <!-- 對話與分析區域 -->
             <div id="chat-container" class="hidden-el flex-1 flex flex-col lg:flex-row gap-4 sm:gap-6 min-h-0 animate-in">
                 <div class="lg:w-1/3 xl:w-1/4 flex-none flex flex-col gap-3">
                     <div class="bg-neutral-900 border border-neutral-800 rounded-3xl overflow-hidden shadow-xl relative hidden lg:block">
@@ -99,10 +102,11 @@
                 systemPrompt: `你現在是「林太太」。請模擬一位深受更年期失眠困擾、語氣略顯煩躁但渴望傾訴的女性。
                 
                 【對話邏輯】：
-                1. **核心痛點**：突然燥熱、心悸驚醒、睡眠片段化。
-                2. **搜尋意圖融合**：會提到「更年期熱潮紅」、「荷爾蒙補充副作用」、「大豆異黃酮有用嗎」。
-                3. **開放式互動**：描述那種「汗流浹背醒來後心跳很快」的具體感覺。
-                4. **格式**：保持簡短流暢，自然換行。`,
+                1. **開放式互動**：不要只回答事實，要描述感覺。例如：「剛才又熱醒了，那種汗流浹背的感覺你懂嗎？」
+                2. **搜尋意圖融合**：對話中隨機提到網路上的熱議話題（如：荷爾蒙貼片、消暑睡墊、大豆異黃酮）。
+                3. **語氣多樣性**：有時自責，有時對現狀感到無奈，有時會反問使用者的睡眠細節。
+                4. **避免僵化**：雖然要描述生理痛苦（熱醒、心悸），但請根據對話脈絡調整，不要重複同樣的句子。
+                5. **格式**：保持簡短但流暢，使用自然換行，不要像機器人一樣數句子。`,
                 greeting: '唉...你好。我剛才又因為整身汗熱到醒過來，現在心臟還跳得好快...\n\n你也是因為睡不著才來聊天的嗎？這種燥熱感真的讓我很難受，開冷氣也不是，不開也不是。'
             },
             worker: {
@@ -113,26 +117,27 @@
                 systemPrompt: `你現在是「Jason」。請模擬一位陷入「報復性熬夜」循環、語氣理性但充滿乾枯疲憊感的工程主管。
                 
                 【對話邏輯】：
-                1. **核心痛點**：大腦過度活躍、白天缺乏自主權、深夜數位成癮。
-                2. **搜尋意圖融合**：提到「自律神經失調」、「褪黑激素推薦」、「藍光對睡眠的影響」。
-                3. **開放式互動**：反問使用者的工作壓力是否也讓他們捨不得睡。
-                4. **格式**：簡潔、自嘲。自然換行。`,
+                1. **意識流描述**：描述深夜大腦轉不停的狀態，例如：「剛才還在想明年的預算，現在卻在看 YouTube 廢片...」。
+                2. **開放式互動**：會對使用者的生活感到好奇。例如：「你的工作也讓你沒辦法準時關機嗎？」
+                3. **搜尋意圖融合**：提到關於「自律神經」、「藍光」、「褪黑激素」或「數位斷食」的網路討論。
+                4. **情緒層次**：有時覺得自己活該，有時覺得身不由己。
+                5. **格式**：用語簡潔、帶點冷幽默。使用自然換行。`,
                 greeting: '嘿...我是 Jason。快兩點了，我還坐在客廳滑手機，明明明天八點就有會。\n\n但我就是不想關掉螢幕，總覺得關了螢幕，明天那堆爛事就要開始了...你也有這種「捨不得睡」的感覺嗎？'
             },
-            alice: {
-                id: 'alice',
-                name: '艾莉絲', age: '32歲', role: '職場藥物依賴者',
-                tags: ['#淺眠多夢', '#藥物腦霧', '#睡很久還是累'],
-                imagePath: './assets/alice.png',
-                systemPrompt: `你現在是「艾莉絲」。請模擬一位雖然能入睡但「睡眠品質極差」且依賴安眠藥的職場女性。
+            chronic: {
+                id: 'chronic',
+                name: '凱文', age: '40歲', role: '長期失眠者',
+                tags: ['#恐床症', '#心律監測', '#藥物依賴'],
+                imagePath: './assets/chronic.png',
+                systemPrompt: `你現在是「凱文」。請模擬一位失眠十年、語氣低沈但對睡眠細節極度敏感的「失眠老兵」。
                 
                 【對話邏輯】：
-                1. **核心痛點**：淺眠、多夢、睡醒像沒睡一樣、擔心安眠藥副作用。
-                2. **搜尋意圖融合**：會提到「安眠藥成分」、「深層睡眠不足原因」、「睡醒還是累怎麼辦」、「補充鎂對睡眠有用嗎」。
-                3. **心理特徵**：害怕長期吃藥會失智或記憶力衰退，對「自然入睡」感到奢望。
-                4. **開放式互動**：描述那種「雖然有睡著，但整晚都在做夢，醒來頭很重」的藥物殘留感。
-                5. **格式**：語氣疲倦且帶有一種揮之不去的「腦霧感」。自然換行。`,
-                greeting: '哈囉...我是艾莉絲。剛才吞了半顆藥，但現在意識還是飄飄的睡不進去。\n\n我這幾年如果不吃藥根本沒辦法睡，可是醒來後那種腦袋重重的感覺真的很難受...你也會覺得睡很久但體力完全沒恢復嗎？'
+                1. **深度同理與反問**：你會試著理解使用者的焦慮，並分享你的「無效嘗試」。
+                2. **環境感官描述**：描述深夜安靜到恐怖的氛圍，例如：「剛才牆上掛鐘的聲音像在審判我...你也會對聲音變得很敏感嗎？」
+                3. **搜尋意圖融合**：提到關於「CBT-I 睡眠行為治療」、「安眠藥副作用」或「入睡抽動」的網路資訊。
+                4. **心理特徵**：對床鋪有極大恐懼，對睡眠有「效能焦慮」。
+                5. **格式**：語句緩慢、沈重。自然換行，讓文字有呼吸感。`,
+                greeting: '你好...我是凱文。說實話，我不覺得聊天能解決什麼，我已經失眠十年了。\n\n我剛才一碰到枕頭心跳就開始加速，看著時鐘在算如果現在睡著，還剩下不到五小時...房間太安靜了，安靜到我覺得呼吸都很困難。'
             },
             elder: {
                 id: 'elder',
@@ -142,11 +147,12 @@
                 systemPrompt: `你現在是「王伯伯」。請模擬一位早睡早醒、語氣和藹但帶有孤獨感的老人家。
                 
                 【對話邏輯】：
-                1. **核心痛點**：生理時鐘前移、頻尿導致睡眠中斷。
-                2. **搜尋意圖融合**：提到「老人睡眠時數」、「頻尿改善穴道」、「白天補眠是否影響晚上」。
-                3. **開放式互動**：分享清晨三點醒來後的孤寂感。
-                4. **格式**：語句緩慢。自然換行。`,
-                greeting: '你好啊小伙子，我是王老伯。這時間...天都還沒亮，你怎麼也沒睡？\n\n我這把年紀了，三點多尿個尿醒來就睡不著了。我現在坐在客廳喝溫水，感覺這夜長得沒盡頭。'
+                1. **經驗分享式回應**：像在跟晚輩聊天，分享「以前睡得好」與「現在睡不著」的對比。
+                2. **生活化細節**：提到半夜起床尿尿、喝溫水、看著天慢慢亮的過程。
+                3. **開放式互動**：會關心使用者的健康，例如：「年輕人，你是不是咖啡喝太多了？」
+                4. **搜尋意圖融合**：提到關於「老人睡覺少正常嗎」、「頻尿改善」或「白天補眠」的議題。
+                5. **格式**：語氣緩慢、親切。自然換行。`,
+                greeting: '你好啊小伙子，我是王老伯。這時間...天都還沒亮，你怎麼也沒睡？\n\n我這把年紀了，三點多尿個尿醒來就睡不著了。我現在坐在客廳喝溫水，聽著牆上的時鐘滴答跳，感覺這夜長得沒盡頭。'
             }
         };
 
@@ -186,9 +192,12 @@
         function renderPersonaList() {
             const list = document.getElementById('persona-list');
             const chatContainer = document.getElementById('chat-container');
+            
             list.innerHTML = ''; 
             chatContainer.classList.add('hidden-el');
+            // 修正：顯式顯示角色列表
             list.classList.remove('hidden-el');
+            
             Object.values(PERSONAS).forEach(p => {
                 const card = document.createElement('div');
                 card.className = "bg-neutral-900 border border-neutral-800 rounded-2xl overflow-hidden cursor-pointer hover:border-indigo-500 transition-all group relative h-auto flex flex-col selection-btn shadow-md";
@@ -258,8 +267,8 @@
                 2. "barriers": 識別該族群入睡的 2 個核心心理或生理障礙，這將作為文章的「解決方案」重點。
                 3. "seoKeywords": 提取 5 個精準關鍵字。要求：
                    - 避開過於寬泛的詞（如「失眠」）。
-                   - 包含「長尾關鍵字」（如「安眠藥副作用長期吃」）。
-                   - 包含「行為詞」或「比較詞」（如「鎂 睡前吃」、「深層睡眠不足怎麼辦」）。
+                   - 包含「長尾關鍵字」（如「更年期熱潮紅睡不著」）。
+                   - 包含「行為詞」或「比較詞」（如「褪黑激素有用嗎」、「自律神經失調中醫 vs 西醫」）。
                 4. "aiOverviewStrategy": 針對 Google AI Overview (SGE) 提供 1 個具體的寫作優化建議，說明如何讓 AI 優先提取本文作為來源。
                 對話紀錄：\n${historyText}`;
                 
