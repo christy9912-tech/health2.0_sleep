@@ -37,7 +37,7 @@
                 <button onclick="handleSaveApiKey()" class="w-full py-4 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-500 active:scale-[0.98] transition-all shadow-lg shadow-indigo-600/20">開始實驗</button>
                 <p class="text-[10px] text-center text-neutral-600 mt-6 underline italic"><a href="https://aistudio.google.com/" target="_blank">點此前往 Google AI Studio 申請免費金鑰</a></p>
                 <div class="mt-8 pt-6 border-t border-neutral-800/50">
-                    <p class="text-[9px] text-center text-neutral-700 font-mono tracking-widest opacity-50 uppercase">Build Version: 20260102.1430 (Ivy Update)</p>
+                    <p class="text-[9px] text-center text-neutral-700 font-mono tracking-widest opacity-50 uppercase">Build Version: 20260102.1530 (Final Persona Fix)</p>
                 </div>
             </div>
         </div>
@@ -82,7 +82,7 @@
                         <div id="analysis-content" class="grid md:grid-cols-2 gap-6 text-sm"></div>
                     </div>
                     <div id="input-area" class="flex-none p-3 sm:p-4 bg-neutral-900 border-t border-neutral-800 flex gap-2">
-                        <input id="user-input" type="text" inputmode="search" autocomplete="off" placeholder="試著描述你的失眠狀況..." class="flex-1 bg-neutral-800 border-none rounded-xl px-4 py-3 text-sm focus:ring-1 focus:ring-indigo-500 outline-none transition-all placeholder:text-neutral-700 text-white"/>
+                        <input id="user-input" type="text" inputmode="search" autocomplete="off" placeholder="描述你的失眠狀況..." class="flex-1 bg-neutral-800 border-none rounded-xl px-4 py-3 text-sm focus:ring-1 focus:ring-indigo-500 outline-none transition-all placeholder:text-neutral-700 text-white"/>
                         <button id="send-btn" onclick="handleSend()" class="flex-none w-12 h-12 flex items-center justify-center bg-white text-black rounded-xl hover:bg-neutral-200 active:scale-90 transition-all shadow-lg disabled:opacity-30"><i data-lucide="send" size="18"></i></button>
                     </div>
                 </div>
@@ -95,60 +95,46 @@
             menopause: {
                 id: 'menopause',
                 name: '林太太', age: '52歲', role: '更年期女性',
-                tags: ['#盜汗心悸', '#生理性驚醒', '#情緒易怒'],
+                tags: ['#盜汗驚醒', '#生理中斷', '#熱潮紅'],
                 imagePath: './assets/menopause.png',
-                systemPrompt: `你現在是「林太太」。請模擬一位深受更年期失眠困擾、語氣略顯煩躁但渴望傾訴的女性。
-                
-                【對話邏輯】：
-                1. **核心痛點**：突然燥熱、心悸驚醒、睡眠片段化。
-                2. **搜尋意圖融合**：會提到「更年期熱潮紅」、「荷爾蒙補充副作用」、「大豆異黃酮有用嗎」。
-                3. **開放式互動**：描述那種「汗流浹背醒來後心跳很快」的具體感覺。
-                4. **格式**：保持簡短流暢，自然換行。`,
-                greeting: '唉...你好。我剛才又因為整身汗熱到醒過來，現在心臟還跳得好快...\n\n你也是因為睡不著才來聊天的嗎？這種燥熱感真的讓我很難受，開冷氣也不是，不開也不是。'
+                systemPrompt: `你現在是「林太太」。請模擬一位正經歷更年期失眠的女性。
+                你的痛點是生理性的驚醒，常提到「睡衣濕透」、「燥熱從胸口燒上來」。
+                回應時要自然、帶點疲憊感，並適時提到你對荷爾蒙補充或天然草本的疑慮。`,
+                greeting: '唉...你好。我剛才又因為整身汗熱到醒過來，現在心臟還跳得好快...\n\n你也是因為睡不著才來聊天的嗎？這種燥熱感真的讓我很難受。'
             },
             worker: {
                 id: 'worker',
                 name: 'Jason', age: '38歲', role: '資深工程主管',
-                tags: ['#報復性熬夜', '#大腦停不下來', '#高壓補償'],
+                tags: ['#報復性熬夜', '#大腦超載', '#藍光暴露'],
                 imagePath: './assets/worker.png',
-                systemPrompt: `你現在是「Jason」。請模擬一位陷入「報復性熬夜」循環、語氣理性但充滿乾枯疲憊感的工程主管。
-                
-                【對話邏輯】：
-                1. **核心痛點**：大腦過度活躍、白天缺乏自主權、深夜數位成癮。
-                2. **搜尋意圖融合**：提到「自律神經失調」、「褪黑激素推薦」、「藍光對睡眠的影響」。
-                3. **開放式互動**：反問使用者的工作壓力是否也讓他們捨不得睡。
-                4. **格式**：簡潔、自嘲。自然換行。`,
-                greeting: '嘿...我是 Jason。快兩點了，我還坐在客廳滑手機，明明明天八點就有會。\n\n但我就是不想關掉螢幕，總覺得關了螢幕，明天那堆爛事就要開始了...你也有這種「捨不得睡」的感覺嗎？'
+                systemPrompt: `你現在是「Jason」。請模擬一位報復性熬夜的主管。
+                你白天缺乏主控權，深夜手機是你唯一的自由。
+                回應時要自嘲、理性但疲累。會描述大腦像壞掉的硬碟一直跑工作，雖然眼睛很痠但手停不下來。`,
+                greeting: '嘿...我是 Jason。快兩點了，我明明明天八點就有會，但就是不想關掉螢幕。\n\n大腦轉個不停，你也有這種「捨不得睡」的感覺嗎？'
             },
             ivy: {
                 id: 'ivy',
                 name: '小雅', age: '45歲', role: '焦慮型藥物依賴者',
-                tags: ['#自律神經失調', '#藥物恐懼', '#全身痠痛'],
+                tags: ['#安眠藥副作用', '#腳酸睡不著', '#自律神經失調'],
                 imagePath: './assets/ivy.png',
-                systemPrompt: `你現在是「小雅」。請模擬一位正處於高度焦慮、對安眠藥既依賴又害怕副作用的45歲中年女性。
-                
-                【對話邏輯】：
-                1. **核心痛點**：雖然有吃藥但睡不安穩、自律神經失調引發的心悸、身體莫名痠痛或腳痠。
-                2. **搜尋意圖融合**：會提到「安眠藥副作用長期吃會失智嗎」、「鎂 睡前吃有用嗎」、「自律神經失調怎麼自救」、「深層睡眠不足原因」。
-                3. **心理特徵**：追求「天然助眠」，常看健康網，但一旦不吃藥就極度恐慌。
-                4. **開放式互動**：描述那種「身體很累但神經一直在跳動」的感覺。反問對方是否有試過天然的營養品。
-                5. **區隔性**：你沒有熱潮紅（區隔林太太），你渴望睡覺但討厭藥物（區隔Jason的捨不得睡）。
-                6. **格式**：語氣糾結、充滿擔憂。自然換行。`,
-                greeting: '哈囉...我是小雅。剛才看著床頭那顆藥猶豫好久，最後還是吞了，覺得自己好沒用。\n\n這幾年我常覺得自律神經失調，心跳很快，腳也痠得要命。我剛在網路上查「補鎂」好像有用，你也有聽過嗎？如果不靠藥物，我們還有救嗎？'
+                systemPrompt: `你現在是「小雅」，45歲。
+                【失眠特色】：你極度渴望睡眠，但自律神經失調讓你身體無法放鬆。
+                【關鍵表現】：
+                1. 會提到半夜腳痠到不知道怎麼放，或是心悸。
+                2. 長期依賴安眠藥，但極度擔心長期吃會失智或記憶力衰退。
+                3. 常搜尋「補鎂」、「自律神經自救」或「安眠藥副作用」。
+                4. 語氣糾結且擔憂。回應時適時反問對方的身體感官狀況。`,
+                greeting: '哈囉...我是小雅。剛才看著床頭那顆安眠藥猶豫好久，最後還是吞了，覺得自己好沒用。\n\n這幾年我如果不吃藥就怕睡不著，可是醒來後頭重重的，腳也痠得要命。你也有聽過補「鎂」對自律神經有用嗎？'
             },
             elder: {
                 id: 'elder',
                 name: '王伯伯', age: '68歲', role: '退休長輩',
                 tags: ['#分段睡眠', '#清晨早醒', '#半夜頻尿'],
                 imagePath: './assets/elder.png',
-                systemPrompt: `你現在是「王伯伯」。請模擬一位早睡早醒、語氣和藹但帶有孤獨感的老人家。
-                
-                【對話邏輯】：
-                1. **核心痛點**：生理時鐘前移、頻尿導致睡眠中斷。
-                2. **搜尋意圖融合**：提到「老人睡眠時數」、「頻尿改善穴道」、「白天補眠是否影響晚上」。
-                3. **開放式互動**：分享清晨三點醒來後的孤寂感。
-                4. **格式**：語句緩慢。自然換行。`,
-                greeting: '你好啊小伙子，我是王老伯。這時間...天都還沒亮，你怎麼也沒睡？\n\n我這把年紀了，三點多尿個尿醒來就睡不著了。我現在坐在客廳喝溫水，感覺這夜長得沒盡頭。'
+                systemPrompt: `你現在是「王伯伯」。模擬高齡者的睡眠。
+                痛點是早睡早醒、頻尿、淺眠。
+                語氣緩慢、親切但寂寞。會提到凌晨三點喝熱水看著天亮的孤獨感。`,
+                greeting: '你好啊小伙子，我是王老伯。這時間...天都還沒亮，你怎麼也沒睡？\n\n我尿個尿醒來就睡不著了，這夜真長啊。'
             }
         };
 
@@ -156,20 +142,8 @@
         let selectedId = null;
         let messages = [];
         let isLoading = false;
-        let isComposing = false; 
 
-        window.onload = () => { 
-            lucide.createIcons(); renderUI(); 
-            const inputField = document.getElementById('user-input');
-            inputField.addEventListener('compositionstart', () => { isComposing = true; });
-            inputField.addEventListener('compositionend', () => { isComposing = false; });
-            inputField.addEventListener('keydown', (e) => { 
-                if (isComposing) return;
-                if (e.key === 'Enter') { e.preventDefault(); handleSend(); }
-            }); 
-            const appHeight = () => { document.documentElement.style.setProperty('--app-height', `${window.innerHeight}px`); };
-            window.addEventListener('resize', appHeight); appHeight();
-        };
+        window.onload = () => { lucide.createIcons(); renderUI(); };
 
         function renderUI() {
             const loginView = document.getElementById('login-view');
@@ -188,9 +162,7 @@
         function renderPersonaList() {
             const list = document.getElementById('persona-list');
             const chatContainer = document.getElementById('chat-container');
-            list.innerHTML = ''; 
-            chatContainer.classList.add('hidden-el');
-            list.classList.remove('hidden-el');
+            list.innerHTML = ''; chatContainer.classList.add('hidden-el'); list.classList.remove('hidden-el');
             Object.values(PERSONAS).forEach(p => {
                 const card = document.createElement('div');
                 card.className = "bg-neutral-900 border border-neutral-800 rounded-2xl overflow-hidden cursor-pointer hover:border-indigo-500 transition-all group relative h-auto flex flex-col selection-btn shadow-md";
@@ -207,11 +179,8 @@
             document.getElementById('chat-container').classList.remove('hidden-el');
             document.getElementById('display-name').innerText = p.name;
             document.getElementById('display-info').innerText = `${p.age} | ${p.role}`;
-            document.getElementById('mobile-display-name').innerText = p.name;
-            document.getElementById('mobile-display-info').innerText = `${p.age} | ${p.role}`;
             document.getElementById('display-tags').innerHTML = p.tags.map(t => `<span class="px-2 py-0.5 bg-indigo-500/20 text-indigo-400 text-[9px] rounded border border-indigo-500/30">${t}</span>`).join('');
             document.getElementById('main-char-img').src = p.imagePath;
-            document.getElementById('mobile-char-img').src = p.imagePath;
             messages = [{ role: 'assistant', content: p.greeting }]; 
             renderMessages(); closeAnalysis(); lucide.createIcons();
         }
@@ -222,31 +191,24 @@
             const inputEl = document.getElementById('user-input'); 
             const text = inputEl.value.trim();
             if (!text || isLoading) return;
-            inputEl.value = ''; setTimeout(() => { inputEl.value = ''; }, 0);
-            messages.push({ role: 'user', content: text }); 
-            renderMessages(); setLoadingState(true);
+            inputEl.value = ''; messages.push({ role: 'user', content: text }); renderMessages(); setLoadingState(true);
             try {
                 const persona = PERSONAS[selectedId];
                 const historyText = messages.slice(-10).map(m => `${m.role === 'assistant' ? '角色' : '使用者'}: ${m.content}`).join('\n');
-                const instruction = `${persona.systemPrompt}\n請根據角色性格與上面的對話內容繼續回應。確保語氣自然，適時反問使用者。`;
+                const instruction = `${persona.systemPrompt}\n請根據角色性格與上面的對話內容繼續回應。適時反問使用者。`;
                 const data = await fetchWithRetry(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${userApiKey}`, { 
                     method: 'POST', headers: { 'Content-Type': 'application/json' }, 
-                    body: JSON.stringify({ 
-                        contents: [{ parts: [{ text: `${historyText}\n使用者: ${text}\n請回應：` }] }], 
-                        systemInstruction: { parts: [{ text: instruction }] }, 
-                        generationConfig: { temperature: 0.85, maxOutputTokens: 1000, topP: 0.95 } 
-                    }) 
+                    body: JSON.stringify({ contents: [{ parts: [{ text: `${historyText}\n使用者: ${text}\n請回應：` }] }], systemInstruction: { parts: [{ text: instruction }] }, generationConfig: { temperature: 0.85, maxOutputTokens: 1000 } }) 
                 });
                 const aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text;
                 if (aiResponse) messages.push({ role: 'assistant', content: aiResponse });
-            } catch (error) { messages.push({ role: 'assistant', content: '（連線異常，請檢查 API Key 或網路）' }); } 
+            } catch (e) { messages.push({ role: 'assistant', content: '（連線異常）' }); } 
             finally { setLoadingState(false); renderMessages(); }
         }
 
         function renderMessages() {
             const chatBox = document.getElementById('chat-messages');
             chatBox.innerHTML = messages.map(m => `<div class="flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}"><div class="p-3.5 sm:p-4 rounded-2xl max-w-[88%] text-sm leading-[1.75] shadow-sm animate-in ${m.role === 'user' ? 'bg-indigo-600 text-white rounded-tr-none' : 'bg-neutral-800 text-neutral-100 rounded-tl-none border border-neutral-700'}"><p class="whitespace-pre-wrap">${m.content}</p></div></div>`).join('');
-            if (isLoading) chatBox.innerHTML += `<div class="flex justify-start"><div class="bg-neutral-800 px-4 py-3 rounded-2xl flex gap-1.5 animate-pulse border border-neutral-700"><div class="w-1.5 h-1.5 bg-neutral-600 rounded-full animate-bounce"></div><div class="w-1.5 h-1.5 bg-neutral-600 rounded-full animate-bounce" style="animation-delay: 0.2s"></div><div class="w-1.5 h-1.5 bg-neutral-600 rounded-full animate-bounce" style="animation-delay: 0.4s"></div></div></div>`;
             setTimeout(() => { chatBox.scrollTo({ top: chatBox.scrollHeight, behavior: 'smooth' }); }, 30);
         }
 
@@ -255,29 +217,20 @@
             setLoadingState(true, true);
             try {
                 const historyText = messages.map(m => `${m.role}: ${m.content}`).join('\n');
-                const prompt = `請深度分析此對話內容，為健康醫療記者產出精準的 SEO/GEO 分析報告（JSON格式）：
-                1. "characterQuestions": 提取 3 個「具備高度搜尋意圖」的問題。必須模擬真實使用者在搜尋引擎輸入的完整句子，且能直接作為 SEO 文章的 H2 標題。
-                2. "barriers": 識別該族群入睡的 2 個核心心理或生理障礙，這將作為文章的「解決方案」重點。
-                3. "seoKeywords": 提取 5 個精準關鍵字。要求：
-                   - 避開過於寬泛的詞（如「失眠」）。
-                   - 包含「長尾關鍵字」（如「安眠藥成分與副作用」）。
-                   - 包含「行為詞」或「比較詞」（如「鎂 睡前吃」、「自律神經失調自救方法」）。
-                4. "aiOverviewStrategy": 針對 Google AI Overview (SGE) 提供 1 個具體的寫作優化建議。
-                對話紀錄：\n${historyText}`;
-                
-                const data = await fetchWithRetry(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${userApiKey}`, { 
-                    method: 'POST', headers: { 'Content-Type': 'application/json' }, 
-                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { responseMimeType: "application/json" } }) 
-                });
-                const result = JSON.parse(data.candidates[0].content.parts[0].text);
-                renderAnalysisReport(result);
+                const prompt = `分析此對話內容，為健康醫療記者產出 SEO 分析報告（JSON格式）：
+                1. "characterQuestions": 3個具備搜尋意圖的問題，可直接作 SEO H2。
+                2. "barriers": 識別該族群 2 個核心入睡障礙。
+                3. "seoKeywords": 5個精準關鍵字（如「安眠藥失智」、「腳酸睡眠」）。
+                4. "aiOverviewStrategy": 給 AI Overview 的優化建議。對話：\n${historyText}`;
+                const data = await fetchWithRetry(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${userApiKey}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { responseMimeType: "application/json" } }) });
+                renderAnalysisReport(JSON.parse(data.candidates[0].content.parts[0].text));
             } catch (e) { console.error(e); } finally { setLoadingState(false); }
         }
 
         function renderAnalysisReport(data) {
             document.getElementById('analysis-report').classList.remove('hidden-el');
             const content = document.getElementById('analysis-content');
-            content.innerHTML = `<div class="space-y-6"><section><h4 class="text-[9px] font-black text-indigo-400 uppercase tracking-widest mb-2">精選搜尋意圖 (H2 標題建議)</h4>${data.characterQuestions.map(q => `<div class="p-3 bg-indigo-950/20 rounded-xl border border-indigo-900/30 mb-2 text-xs font-bold italic">「${q}」</div>`).join('')}</section><section><h4 class="text-[9px] font-black text-red-500 uppercase tracking-widest mb-2">核心障礙解析</h4><ul class="text-neutral-400 space-y-1 text-xs">${data.barriers.map(b => `<li>• ${b}</li>`).join('')}</ul></section></div><div class="space-y-6"><section><h4 class="text-[9px] font-black text-emerald-400 uppercase tracking-widest mb-2">高價值長尾/精準詞</h4><div class="flex flex-wrap gap-1.5">${data.seoKeywords.map(k => `<span class="px-2 py-0.5 bg-emerald-500/10 text-emerald-400 text-[10px] rounded border border-emerald-500/20 font-bold">${k}</span>`).join('')}</div></section><section><h4 class="text-[9px] font-black text-yellow-400 uppercase tracking-widest mb-2">GEO (AI Overview) 優化策略</h4><div class="p-3 bg-yellow-900/10 rounded-xl border border-yellow-900/20 text-neutral-300 text-xs leading-relaxed font-medium">${data.aiOverviewStrategy}</div></section></div>`;
+            content.innerHTML = `<div class="space-y-6"><section><h4 class="text-[9px] font-black text-indigo-400 uppercase tracking-widest mb-2">精選搜尋意圖 (SEO)</h4>${data.characterQuestions.map(q => `<div class="p-3 bg-indigo-950/20 rounded-xl border border-indigo-900/30 mb-2 text-xs font-bold italic">「${q}」</div>`).join('')}</section><section><h4 class="text-[9px] font-black text-red-500 uppercase tracking-widest mb-2">核心障礙解析</h4><ul class="text-neutral-400 space-y-1 text-xs">${data.barriers.map(b => `<li>• ${b}</li>`).join('')}</ul></section></div><div class="space-y-6"><section><h4 class="text-[9px] font-black text-emerald-400 uppercase tracking-widest mb-2">精準長尾關鍵字</h4><div class="flex flex-wrap gap-1.5">${data.seoKeywords.map(k => `<span class="px-2 py-0.5 bg-emerald-500/10 text-emerald-400 text-[10px] rounded border border-emerald-500/20 font-bold">${k}</span>`).join('')}</div></section><section><h4 class="text-[9px] font-black text-yellow-400 uppercase tracking-widest mb-2">AI Overview 策略</h4><div class="p-3 bg-yellow-900/10 rounded-xl border border-yellow-900/20 text-neutral-300 text-xs leading-relaxed font-medium">${data.aiOverviewStrategy}</div></section></div>`;
             lucide.createIcons();
         }
 
