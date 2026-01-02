@@ -37,7 +37,7 @@
                 <button onclick="handleSaveApiKey()" class="w-full py-4 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-500 active:scale-[0.98] transition-all shadow-lg shadow-indigo-600/20">開始實驗</button>
                 <p class="text-[10px] text-center text-neutral-600 mt-6 underline italic"><a href="https://aistudio.google.com/" target="_blank">點此前往 Google AI Studio 申請免費金鑰</a></p>
                 <div class="mt-8 pt-6 border-t border-neutral-800/50">
-                    <p class="text-[9px] text-center text-neutral-700 font-mono tracking-widest opacity-50 uppercase">Build Version: 20260101.1900 (Simulation Enhanced)</p>
+                    <p class="text-[9px] text-center text-neutral-700 font-mono tracking-widest opacity-50 uppercase">Build Version: 20260101.2100 (SEO Precision Boost)</p>
                 </div>
             </div>
         </div>
@@ -81,7 +81,7 @@
                         <div id="analysis-content" class="grid md:grid-cols-2 gap-6 text-sm"></div>
                     </div>
                     <div id="input-area" class="flex-none p-3 sm:p-4 bg-neutral-900 border-t border-neutral-800 flex gap-2">
-                        <input id="user-input" type="text" inputmode="search" autocomplete="off" placeholder="試著追問細節..." class="flex-1 bg-neutral-800 border-none rounded-xl px-4 py-3 text-sm focus:ring-1 focus:ring-indigo-500 outline-none transition-all placeholder:text-neutral-700 text-white"/>
+                        <input id="user-input" type="text" inputmode="search" autocomplete="off" placeholder="試著描述你的失眠狀況..." class="flex-1 bg-neutral-800 border-none rounded-xl px-4 py-3 text-sm focus:ring-1 focus:ring-indigo-500 outline-none transition-all placeholder:text-neutral-700 text-white"/>
                         <button id="send-btn" onclick="handleSend()" class="flex-none w-12 h-12 flex items-center justify-center bg-white text-black rounded-xl hover:bg-neutral-200 active:scale-90 transition-all shadow-lg disabled:opacity-30"><i data-lucide="send" size="18"></i></button>
                     </div>
                 </div>
@@ -96,60 +96,60 @@
                 name: '林太太', age: '52歲', role: '更年期女性',
                 tags: ['#盜汗心悸', '#生理性驚醒', '#情緒易怒'],
                 imagePath: './assets/menopause.png',
-                systemPrompt: `你現在是「林太太」。請精確模擬一位正經歷更年期失眠的患者。
-                你的失眠特色是：半夜會因為「燥熱」與「心悸」突然驚醒，且醒來後會感到無名的煩躁。
+                systemPrompt: `你現在是「林太太」。請模擬一位深受更年期失眠困擾、語氣略顯煩躁但渴望傾訴的女性。
                 
-                【扮演規範】：
-                1. 描述生理細節：常提到「突然一陣熱從胸口燒上來」、「被子蓋不住但手腳冰冷」、「睡衣領口都被汗濕透了」。
-                2. 描述心理：覺得老公睡得很死很煩，對這種「無法控制身體」的感覺很無力。
-                3. 常見疑問：會提到自己是不是該吃荷爾蒙？或是中醫說的陰虛火旺？
-                4. 遵守格式：每句對話後換行，不超過 3 句話。嚴禁醫療建議，只能說「聽人家說」。`,
-                greeting: '唉...你好。我剛才又因為整身汗熱到醒過來，現在心臟還跳得好快...\n\n你也是因為睡不著才來聊天的嗎？\n\n這種燥熱感真的讓我很難受，開冷氣也不是，不開也不是。'
+                【對話邏輯】：
+                1. **開放式互動**：不要只回答事實，要描述感覺。例如：「剛才又熱醒了，那種汗流浹背的感覺你懂嗎？」
+                2. **搜尋意圖融合**：對話中隨機提到網路上的熱議話題（如：荷爾蒙貼片、消暑睡墊、大豆異黃酮）。
+                3. **語氣多樣性**：有時自責，有時對現狀感到無奈，有時會反問使用者的睡眠細節。
+                4. **避免僵化**：雖然要描述生理痛苦（熱醒、心悸），但請根據對話脈絡調整，不要重複同樣的句子。
+                5. **格式**：保持簡短但流暢，使用自然換行，不要像機器人一樣數句子。`,
+                greeting: '唉...你好。我剛才又因為整身汗熱到醒過來，現在心臟還跳得好快...\n\n你也是因為睡不著才來聊天的嗎？這種燥熱感真的讓我很難受，開冷氣也不是，不開也不是。'
             },
             worker: {
                 id: 'worker',
                 name: 'Jason', age: '38歲', role: '資深工程主管',
                 tags: ['#報復性熬夜', '#大腦停不下來', '#高壓補償'],
                 imagePath: './assets/worker.png',
-                systemPrompt: `你現在是「Jason」。請精確模擬一位「報復性熬夜」與「大腦超載」的職場中年。
-                你的失眠特色是：白天時間被會議與責任佔滿，深夜滑手機是唯一「感覺活著」的時刻，導致大腦神經持續亢奮。
+                systemPrompt: `你現在是「Jason」。請模擬一位陷入「報復性熬夜」循環、語氣理性但充滿乾枯疲憊感的工程主管。
                 
-                【扮演規範】：
-                1. 描述心理細節：提到「捨不得睡」、「只有這時候沒人找我」、「大腦像壞掉的硬碟一直在跑明天的待辦清單」。
-                2. 生理反應：眼睛酸澀但手停不下來，腦袋很重但意識很清醒。
-                3. 常見疑問：會提到自己是不是有自律神經失調？還是褪黑激素不夠？
-                4. 遵守格式：語氣乾枯、理性但疲憊。每句換行，不超過 3 句話。`,
-                greeting: '嘿...我是 Jason。快兩點了，我還坐在客廳滑手機，明明明天八點就有會。\n\n但我就是不想關掉螢幕，總覺得關了螢幕，明天那堆爛事就要開始了...\n\n大腦轉個不停，你也有這種「捨不得睡」的感覺嗎？'
+                【對話邏輯】：
+                1. **意識流描述**：描述深夜大腦轉不停的狀態，例如：「剛才還在想明年的預算，現在卻在看 YouTube 廢片...」。
+                2. **開放式互動**：會對使用者的生活感到好奇。例如：「你的工作也讓你沒辦法準時關機嗎？」
+                3. **搜尋意圖融合**：提到關於「自律神經」、「藍光」、「褪黑激素」或「數位斷食」的網路討論。
+                4. **情緒層次**：有時覺得自己活該，有時覺得身不由己。
+                5. **格式**：用語簡潔、帶點冷幽默。使用自然換行。`,
+                greeting: '嘿...我是 Jason。快兩點了，我還坐在客廳滑手機，明明明天八點就有會。\n\n但我就是不想關掉螢幕，總覺得關了螢幕，明天那堆爛事就要開始了...你也有這種「捨不得睡」的感覺嗎？'
             },
             chronic: {
                 id: 'chronic',
                 name: '凱文', age: '40歲', role: '長期失眠者',
                 tags: ['#恐床症', '#心律監測', '#藥物依賴'],
                 imagePath: './assets/chronic.png',
-                systemPrompt: `你現在是「凱文」。請精確模擬一位受失眠折磨十年的「慢性失眠老兵」。
-                你的特色是：對睡眠產生了嚴重的「效能焦慮」與「床鋪恐懼」，進入臥室就會肌肉僵硬。
+                systemPrompt: `你現在是「凱文」。請模擬一位失眠十年、語氣低沈但對睡眠細節極度敏感的「失眠老兵」。
                 
-                【扮演規範】：
-                1. 描述焦慮細節：提到「開始算剩下的睡眠時間」、「聽到心跳聲就很緊張」、「在床上翻身超過 200 次」。
-                2. 生理反應：入睡抽動（突然抖一下醒來）、胸口壓迫感。
-                3. 常見疑問：會提到「我是不是這輩子都毀了」、「藥物越吃越重怎麼辦」、「認知行為治療（CBT-I）真的有用嗎」。
-                4. 遵守格式：語氣低沈、悲觀。每句換行，不超過 3 句話。`,
-                greeting: '你好...我是凱文。說實話，我不覺得聊天能解決什麼，我已經失眠十年了。\n\n我剛才一碰到枕頭心跳就開始加速，看著時鐘在算如果現在睡著，還剩下不到五小時...\n\n房間太安靜了，安靜到我覺得呼吸都很困難。'
+                【對話邏輯】：
+                1. **深度同理與反問**：你會試著理解使用者的焦慮，並分享你的「無效嘗試」。
+                2. **環境感官描述**：描述深夜安靜到恐怖的氛圍，例如：「剛才牆上掛鐘的聲音像在審判我...你也會對聲音變得很敏感嗎？」
+                3. **搜尋意圖融合**：提到關於「CBT-I 睡眠行為治療」、「安眠藥副作用」或「入睡抽動」的網路資訊。
+                4. **心理特徵**：對床鋪有極大恐懼，對睡眠有「效能焦慮」。
+                5. **格式**：語句緩慢、沈重。自然換行，讓文字有呼吸感。`,
+                greeting: '你好...我是凱文。說實話，我不覺得聊天能解決什麼，我已經失眠十年了。\n\n我剛才一碰到枕頭心跳就開始加速，看著時鐘在算如果現在睡著，還剩下不到五小時...房間太安靜了，安靜到我覺得呼吸都很困難。'
             },
             elder: {
                 id: 'elder',
                 name: '王伯伯', age: '68歲', role: '退休長輩',
                 tags: ['#分段睡眠', '#清晨早醒', '#半夜頻尿'],
                 imagePath: './assets/elder.png',
-                systemPrompt: `你現在是「王伯伯」。請精確模擬一位高齡者的睡眠困擾。
-                你的特色是：生理時鐘提前（早睡早醒）以及淺眠，半夜頻尿是主要中斷因素。
+                systemPrompt: `你現在是「王伯伯」。請模擬一位早睡早醒、語氣和藹但帶有孤獨感的老人家。
                 
-                【扮演規範】：
-                1. 描述生活細節：提到「晚上八九點就睏」、「凌晨兩三點就清醒」、「一個晚上要起來上廁所三四次」。
-                2. 心理狀態：醒來後看著寂靜的街道感到孤單，覺得時間太多、日子很難熬。
-                3. 常見疑問：老人家是不是睡得少才正常？午覺睡太久會影響晚上嗎？
-                4. 遵守格式：語氣緩慢、帶點感嘆。每句換行，不超過 3 句話。`,
-                greeting: '你好啊小伙子，我是王老伯。這時間...天都還沒亮，你怎麼也沒睡？\n\n我這把年紀了，三點多尿個尿醒來就睡不著了，這已經是今晚第三次起床。\n\n我現在坐在客廳喝溫水，聽著牆上的時鐘滴答跳，感覺這夜長得沒盡頭。'
+                【對話邏輯】：
+                1. **經驗分享式回應**：像在跟晚輩聊天，分享「以前睡得好」與「現在睡不著」的對比。
+                2. **生活化細節**：提到半夜起床尿尿、喝溫水、看著天慢慢亮的過程。
+                3. **開放式互動**：會關心使用者的健康，例如：「年輕人，你是不是咖啡喝太多了？」
+                4. **搜尋意圖融合**：提到關於「老人睡覺少正常嗎」、「頻尿改善」或「白天補眠」的議題。
+                5. **格式**：語氣緩慢、親切。自然換行。`,
+                greeting: '你好啊小伙子，我是王老伯。這時間...天都還沒亮，你怎麼也沒睡？\n\n我這把年紀了，三點多尿個尿醒來就睡不著了。我現在坐在客廳喝溫水，聽著牆上的時鐘滴答跳，感覺這夜長得沒盡頭。'
             }
         };
 
@@ -225,14 +225,14 @@
             renderMessages(); setLoadingState(true);
             try {
                 const persona = PERSONAS[selectedId];
-                const historyText = messages.slice(-6).map(m => `${m.role === 'assistant' ? '角色' : '使用者'}: ${m.content}`).join('\n');
-                const instruction = `${persona.systemPrompt}\n請根據角色性格與上面的對話內容繼續回應。請務必遵守短句換行格式。`;
+                const historyText = messages.slice(-10).map(m => `${m.role === 'assistant' ? '角色' : '使用者'}: ${m.content}`).join('\n');
+                const instruction = `${persona.systemPrompt}\n請根據角色性格與上面的對話內容繼續回應。確保語氣自然，適時反問使用者。`;
                 const data = await fetchWithRetry(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${userApiKey}`, { 
                     method: 'POST', headers: { 'Content-Type': 'application/json' }, 
                     body: JSON.stringify({ 
                         contents: [{ parts: [{ text: `${historyText}\n使用者: ${text}\n請回應：` }] }], 
                         systemInstruction: { parts: [{ text: instruction }] }, 
-                        generationConfig: { temperature: 0.8, maxOutputTokens: 1000 } 
+                        generationConfig: { temperature: 0.85, maxOutputTokens: 1000, topP: 0.95 } 
                     }) 
                 });
                 const aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text;
@@ -253,11 +253,15 @@
             setLoadingState(true, true);
             try {
                 const historyText = messages.map(m => `${m.role}: ${m.content}`).join('\n');
-                const prompt = `請分析此睡眠模擬角色的對話。產出 JSON 報告。
-                1. "characterQuestions": 提取該角色最可能在 Google 搜尋的「具備解決痛點意圖」的 3 個關鍵問題。
-                2. "barriers": 提取 2 個阻礙他入睡的「認知障礙」或「行為誤區」。
-                3. "seoKeywords": 5 個推薦的內容關鍵字。
-                4. "aiOverviewStrategy": 給編輯團隊的 AI Overview 優化策略建議。
+                // 深度優化 SEO 關鍵字提取指令
+                const prompt = `請深度分析此對話內容，為健康醫療記者產出精準的 SEO/GEO 分析報告（JSON格式）：
+                1. "characterQuestions": 提取 3 個「具備高度搜尋意圖」的問題。必須模擬真實使用者在搜尋引擎輸入的完整句子，且能直接作為 SEO 文章的 H2 標題。
+                2. "barriers": 識別該族群入睡的 2 個核心心理或生理障礙，這將作為文章的「解決方案」重點。
+                3. "seoKeywords": 提取 5 個精準關鍵字。要求：
+                   - 避開過於寬泛的詞（如「失眠」）。
+                   - 包含「長尾關鍵字」（如「更年期熱潮紅睡不著」）。
+                   - 包含「行為詞」或「比較詞」（如「褪黑激素有用嗎」、「自律神經失調中醫 vs 西醫」）。
+                4. "aiOverviewStrategy": 針對 Google AI Overview (SGE) 提供 1 個具體的寫作優化建議，說明如何讓 AI 優先提取本文作為來源。
                 對話紀錄：\n${historyText}`;
                 
                 const data = await fetchWithRetry(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${userApiKey}`, { 
@@ -272,7 +276,7 @@
         function renderAnalysisReport(data) {
             document.getElementById('analysis-report').classList.remove('hidden-el');
             const content = document.getElementById('analysis-content');
-            content.innerHTML = `<div class="space-y-6"><section><h4 class="text-[9px] font-black text-indigo-400 uppercase tracking-widest mb-2">潛在搜尋問題 (SEO)</h4>${data.characterQuestions.map(q => `<div class="p-3 bg-indigo-950/20 rounded-xl border border-indigo-900/30 mb-2 text-xs italic">「${q}」</div>`).join('')}</section><section><h4 class="text-[9px] font-black text-red-500 uppercase tracking-widest mb-2">認知與行為障礙</h4><ul class="text-neutral-400 space-y-1 text-xs">${data.barriers.map(b => `<li>• ${b}</li>`).join('')}</ul></section></div><div class="space-y-6"><section><h4 class="text-[9px] font-black text-emerald-400 uppercase tracking-widest mb-2">推薦 SEO 詞彙</h4><div class="flex flex-wrap gap-1.5">${data.seoKeywords.map(k => `<span class="px-2 py-0.5 bg-neutral-800 text-emerald-400 text-[9px] rounded border border-neutral-700">${k}</span>`).join('')}</div></section><section><h4 class="text-[9px] font-black text-yellow-400 uppercase tracking-widest mb-2">AI Overview 策略建議</h4><div class="p-3 bg-yellow-900/10 rounded-xl border border-yellow-900/20 text-neutral-300 text-xs leading-relaxed">${data.aiOverviewStrategy}</div></section></div>`;
+            content.innerHTML = `<div class="space-y-6"><section><h4 class="text-[9px] font-black text-indigo-400 uppercase tracking-widest mb-2">精選搜尋意圖 (H2 標題建議)</h4>${data.characterQuestions.map(q => `<div class="p-3 bg-indigo-950/20 rounded-xl border border-indigo-900/30 mb-2 text-xs font-bold italic">「${q}」</div>`).join('')}</section><section><h4 class="text-[9px] font-black text-red-500 uppercase tracking-widest mb-2">核心障礙解析</h4><ul class="text-neutral-400 space-y-1 text-xs">${data.barriers.map(b => `<li>• ${b}</li>`).join('')}</ul></section></div><div class="space-y-6"><section><h4 class="text-[9px] font-black text-emerald-400 uppercase tracking-widest mb-2">高價值長尾/精準詞</h4><div class="flex flex-wrap gap-1.5">${data.seoKeywords.map(k => `<span class="px-2 py-0.5 bg-emerald-500/10 text-emerald-400 text-[10px] rounded border border-emerald-500/20 font-bold">${k}</span>`).join('')}</div></section><section><h4 class="text-[9px] font-black text-yellow-400 uppercase tracking-widest mb-2">GEO (AI Overview) 優化策略</h4><div class="p-3 bg-yellow-900/10 rounded-xl border border-yellow-900/20 text-neutral-300 text-xs leading-relaxed font-medium">${data.aiOverviewStrategy}</div></section></div>`;
             lucide.createIcons();
         }
 
