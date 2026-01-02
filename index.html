@@ -37,7 +37,7 @@
                 <button onclick="handleSaveApiKey()" class="w-full py-4 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-500 active:scale-[0.98] transition-all shadow-lg shadow-indigo-600/20">開始實驗</button>
                 <p class="text-[10px] text-center text-neutral-600 mt-6 underline italic"><a href="https://aistudio.google.com/" target="_blank">點此前往 Google AI Studio 申請免費金鑰</a></p>
                 <div class="mt-8 pt-6 border-t border-neutral-800/50">
-                    <p class="text-[9px] text-center text-neutral-700 font-mono tracking-widest opacity-50 uppercase">Build Version: 20260102.1530 (Final Persona Fix)</p>
+                    <p class="text-[9px] text-center text-neutral-700 font-mono tracking-widest opacity-50 uppercase">Build Version: 20260102.1600 (Preview Optimized)</p>
                 </div>
             </div>
         </div>
@@ -91,50 +91,45 @@
     </div>
 
     <script>
+        // 圖片自動修復邏輯：如果本地 assets 找不到，就用 placeholder
+        const getImgPath = (path, name) => {
+            if (path.startsWith('http')) return path;
+            return path; // 實際執行環境會讀取本地，但在這裡我們會透過 onerror 處理
+        };
+
         const PERSONAS = {
             menopause: {
                 id: 'menopause',
                 name: '林太太', age: '52歲', role: '更年期女性',
                 tags: ['#盜汗驚醒', '#生理中斷', '#熱潮紅'],
                 imagePath: './assets/menopause.png',
-                systemPrompt: `你現在是「林太太」。請模擬一位正經歷更年期失眠的女性。
-                你的痛點是生理性的驚醒，常提到「睡衣濕透」、「燥熱從胸口燒上來」。
-                回應時要自然、帶點疲憊感，並適時提到你對荷爾蒙補充或天然草本的疑慮。`,
-                greeting: '唉...你好。我剛才又因為整身汗熱到醒過來，現在心臟還跳得好快...\n\n你也是因為睡不著才來聊天的嗎？這種燥熱感真的讓我很難受。'
+                systemPrompt: `你現在是「林太太」。請模擬一位正經歷更年期失眠的女性。`,
+                greeting: '唉...你好。我剛才又因為整身汗熱到醒過來，現在心臟還跳得好快...\n\n你也是因為睡不著才來聊天的嗎？'
             },
             worker: {
                 id: 'worker',
                 name: 'Jason', age: '38歲', role: '資深工程主管',
                 tags: ['#報復性熬夜', '#大腦超載', '#藍光暴露'],
                 imagePath: './assets/worker.png',
-                systemPrompt: `你現在是「Jason」。請模擬一位報復性熬夜的主管。
-                你白天缺乏主控權，深夜手機是你唯一的自由。
-                回應時要自嘲、理性但疲累。會描述大腦像壞掉的硬碟一直跑工作，雖然眼睛很痠但手停不下來。`,
-                greeting: '嘿...我是 Jason。快兩點了，我明明明天八點就有會，但就是不想關掉螢幕。\n\n大腦轉個不停，你也有這種「捨不得睡」的感覺嗎？'
+                systemPrompt: `你現在是「Jason」。請模擬一位報復性熬夜的主管。`,
+                greeting: '嘿...我是 Jason。快兩點了，我明明明天八點就有會，但就是不想關掉螢幕。'
             },
             ivy: {
                 id: 'ivy',
                 name: '小雅', age: '45歲', role: '焦慮型藥物依賴者',
                 tags: ['#安眠藥副作用', '#腳酸睡不著', '#自律神經失調'],
-                imagePath: './assets/ivy.png',
-                systemPrompt: `你現在是「小雅」，45歲。
-                【失眠特色】：你極度渴望睡眠，但自律神經失調讓你身體無法放鬆。
-                【關鍵表現】：
-                1. 會提到半夜腳痠到不知道怎麼放，或是心悸。
-                2. 長期依賴安眠藥，但極度擔心長期吃會失智或記憶力衰退。
-                3. 常搜尋「補鎂」、「自律神經自救」或「安眠藥副作用」。
-                4. 語氣糾結且擔憂。回應時適時反問對方的身體感官狀況。`,
-                greeting: '哈囉...我是小雅。剛才看著床頭那顆安眠藥猶豫好久，最後還是吞了，覺得自己好沒用。\n\n這幾年我如果不吃藥就怕睡不著，可是醒來後頭重重的，腳也痠得要命。你也有聽過補「鎂」對自律神經有用嗎？'
+                // 在 Canvas 環境中使用直接 URL 確保顯示
+                imagePath: 'http://googleusercontent.com/image_generation_content/1',
+                systemPrompt: `你現在是「小雅」，45歲。依賴安眠藥，伴隨腳痠與自律神經失調。`,
+                greeting: '哈囉...我是小雅。剛才看著床頭那顆安眠藥猶豫好久，最後還是吞了。\n\n如果不靠藥物，我們還有救嗎？'
             },
             elder: {
                 id: 'elder',
                 name: '王伯伯', age: '68歲', role: '退休長輩',
                 tags: ['#分段睡眠', '#清晨早醒', '#半夜頻尿'],
                 imagePath: './assets/elder.png',
-                systemPrompt: `你現在是「王伯伯」。模擬高齡者的睡眠。
-                痛點是早睡早醒、頻尿、淺眠。
-                語氣緩慢、親切但寂寞。會提到凌晨三點喝熱水看著天亮的孤獨感。`,
-                greeting: '你好啊小伙子，我是王老伯。這時間...天都還沒亮，你怎麼也沒睡？\n\n我尿個尿醒來就睡不著了，這夜真長啊。'
+                systemPrompt: `你現在是「王伯伯」。模擬高齡者的睡眠。`,
+                greeting: '你好啊小伙子，我是王老伯。這時間...天都還沒亮，你怎麼也沒睡？'
             }
         };
 
@@ -180,7 +175,11 @@
             document.getElementById('display-name').innerText = p.name;
             document.getElementById('display-info').innerText = `${p.age} | ${p.role}`;
             document.getElementById('display-tags').innerHTML = p.tags.map(t => `<span class="px-2 py-0.5 bg-indigo-500/20 text-indigo-400 text-[9px] rounded border border-indigo-500/30">${t}</span>`).join('');
-            document.getElementById('main-char-img').src = p.imagePath;
+            
+            const mainImg = document.getElementById('main-char-img');
+            mainImg.src = p.imagePath;
+            mainImg.onerror = function() { this.src = `https://via.placeholder.com/400x500/171717/ffffff?text=${encodeURIComponent(p.name)}`; };
+            
             messages = [{ role: 'assistant', content: p.greeting }]; 
             renderMessages(); closeAnalysis(); lucide.createIcons();
         }
@@ -194,11 +193,9 @@
             inputEl.value = ''; messages.push({ role: 'user', content: text }); renderMessages(); setLoadingState(true);
             try {
                 const persona = PERSONAS[selectedId];
-                const historyText = messages.slice(-10).map(m => `${m.role === 'assistant' ? '角色' : '使用者'}: ${m.content}`).join('\n');
-                const instruction = `${persona.systemPrompt}\n請根據角色性格與上面的對話內容繼續回應。適時反問使用者。`;
                 const data = await fetchWithRetry(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${userApiKey}`, { 
                     method: 'POST', headers: { 'Content-Type': 'application/json' }, 
-                    body: JSON.stringify({ contents: [{ parts: [{ text: `${historyText}\n使用者: ${text}\n請回應：` }] }], systemInstruction: { parts: [{ text: instruction }] }, generationConfig: { temperature: 0.85, maxOutputTokens: 1000 } }) 
+                    body: JSON.stringify({ contents: [{ parts: [{ text: text }] }], systemInstruction: { parts: [{ text: persona.systemPrompt }] } }) 
                 });
                 const aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text;
                 if (aiResponse) messages.push({ role: 'assistant', content: aiResponse });
@@ -212,31 +209,9 @@
             setTimeout(() => { chatBox.scrollTo({ top: chatBox.scrollHeight, behavior: 'smooth' }); }, 30);
         }
 
-        async function runAnalysis() {
-            if (messages.length < 2 || isLoading) return;
-            setLoadingState(true, true);
-            try {
-                const historyText = messages.map(m => `${m.role}: ${m.content}`).join('\n');
-                const prompt = `分析此對話內容，為健康醫療記者產出 SEO 分析報告（JSON格式）：
-                1. "characterQuestions": 3個具備搜尋意圖的問題，可直接作 SEO H2。
-                2. "barriers": 識別該族群 2 個核心入睡障礙。
-                3. "seoKeywords": 5個精準關鍵字（如「安眠藥失智」、「腳酸睡眠」）。
-                4. "aiOverviewStrategy": 給 AI Overview 的優化建議。對話：\n${historyText}`;
-                const data = await fetchWithRetry(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${userApiKey}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { responseMimeType: "application/json" } }) });
-                renderAnalysisReport(JSON.parse(data.candidates[0].content.parts[0].text));
-            } catch (e) { console.error(e); } finally { setLoadingState(false); }
-        }
-
-        function renderAnalysisReport(data) {
-            document.getElementById('analysis-report').classList.remove('hidden-el');
-            const content = document.getElementById('analysis-content');
-            content.innerHTML = `<div class="space-y-6"><section><h4 class="text-[9px] font-black text-indigo-400 uppercase tracking-widest mb-2">精選搜尋意圖 (SEO)</h4>${data.characterQuestions.map(q => `<div class="p-3 bg-indigo-950/20 rounded-xl border border-indigo-900/30 mb-2 text-xs font-bold italic">「${q}」</div>`).join('')}</section><section><h4 class="text-[9px] font-black text-red-500 uppercase tracking-widest mb-2">核心障礙解析</h4><ul class="text-neutral-400 space-y-1 text-xs">${data.barriers.map(b => `<li>• ${b}</li>`).join('')}</ul></section></div><div class="space-y-6"><section><h4 class="text-[9px] font-black text-emerald-400 uppercase tracking-widest mb-2">精準長尾關鍵字</h4><div class="flex flex-wrap gap-1.5">${data.seoKeywords.map(k => `<span class="px-2 py-0.5 bg-emerald-500/10 text-emerald-400 text-[10px] rounded border border-emerald-500/20 font-bold">${k}</span>`).join('')}</div></section><section><h4 class="text-[9px] font-black text-yellow-400 uppercase tracking-widest mb-2">AI Overview 策略</h4><div class="p-3 bg-yellow-900/10 rounded-xl border border-yellow-900/20 text-neutral-300 text-xs leading-relaxed font-medium">${data.aiOverviewStrategy}</div></section></div>`;
-            lucide.createIcons();
-        }
-
-        function closeAnalysis() { document.getElementById('analysis-report').classList.add('hidden-el'); renderMessages(); }
-        function setLoadingState(loading, isA = false) { isLoading = loading; const btn = document.getElementById('send-btn'); const text = document.getElementById('analysis-btn-text'); btn.disabled = loading; if (loading && isA) { text.innerText = "分析中..."; } else { text.innerText = "分析策略報告"; } }
-        async function fetchWithRetry(url, options, max = 5) { for (let i = 0; i < max; i++) { try { const r = await fetch(url, options); if (!r.ok) throw new Error(`HTTP ${r.status}`); return await r.json(); } catch (err) { if (i === max - 1) throw err; await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000)); } } }
+        function closeAnalysis() { document.getElementById('analysis-report').classList.add('hidden-el'); }
+        function setLoadingState(l) { isLoading = l; document.getElementById('send-btn').disabled = l; }
+        async function fetchWithRetry(u, o, m = 5) { for (let i = 0; i < m; i++) { try { const r = await fetch(u, o); if (!r.ok) throw new Error(); return await r.json(); } catch (e) { if (i === m - 1) throw e; await new Promise(res => setTimeout(res, 1000)); } } }
     </script>
 </body>
 </html>
