@@ -37,7 +37,7 @@
                 <button onclick="handleSaveApiKey()" class="w-full py-4 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-500 active:scale-[0.98] transition-all shadow-lg shadow-indigo-600/20">開始實驗</button>
                 <p class="text-[10px] text-center text-neutral-600 mt-6 underline italic"><a href="https://aistudio.google.com/" target="_blank">點此前往 Google AI Studio 申請免費金鑰</a></p>
                 <div class="mt-8 pt-6 border-t border-neutral-800/50">
-                    <p class="text-[9px] text-center text-neutral-700 font-mono tracking-widest opacity-50 uppercase">Build Version: 20260107.1400 (Login Fix)</p>
+                    <p class="text-[9px] text-center text-neutral-700 font-mono tracking-widest opacity-50 uppercase">Build Version: 20260107.1111 (GEO Fan-Out Update)</p>
                 </div>
             </div>
         </div>
@@ -86,7 +86,7 @@
                     </div>
 
                     <div id="input-area" class="flex-none p-3 sm:p-4 bg-neutral-900 border-t border-neutral-800 flex gap-2">
-                        <input id="user-input" type="text" autocomplete="off" placeholder="描述你的失眠狀況..." class="flex-1 bg-neutral-800 border-none rounded-xl px-4 py-3 text-sm focus:ring-1 focus:ring-indigo-500 outline-none transition-all placeholder:text-neutral-700 text-white"/>
+                        <input id="user-input" type="text" autocomplete="off" placeholder="試著跟角色聊天..." class="flex-1 bg-neutral-800 border-none rounded-xl px-4 py-3 text-sm focus:ring-1 focus:ring-indigo-500 outline-none transition-all placeholder:text-neutral-700 text-white"/>
                         <button id="send-btn" onclick="handleSend()" class="flex-none w-12 h-12 flex items-center justify-center bg-white text-black rounded-xl hover:bg-neutral-200 active:scale-90 transition-all shadow-lg disabled:opacity-30"><i data-lucide="send" size="18"></i></button>
                     </div>
                 </div>
@@ -100,29 +100,33 @@
                 id: 'menopause', name: '林太太', age: '52歲', role: '更年期女性',
                 tags: ['#盜汗驚醒', '#生理中斷', '#熱潮紅'],
                 imagePath: './assets/menopause.png',
-                systemPrompt: `你現在是「林太太」。請模擬一位正經歷更年期失眠的女性。痛點是生理性的驚醒，常提到「睡衣濕透」、「燥熱從胸口燒上來」。語氣煩躁且疲憊。`,
-                greeting: '唉...你好。我剛才又因為整身汗熱到醒過來，現在心臟還跳得好快...\n\n你也是因為睡不著才來聊天的嗎？'
+                systemPrompt: `你現在是「林太太」。請模擬一位正經歷更年期失眠的女性。你的痛點是生理性的驚醒，常提到「睡衣濕透」、「燥熱從胸口燒上來」。語氣煩躁且疲憊。回應時要自然、帶點疲憊感，並適時提到你對荷爾蒙補充或天然草本的疑慮。`,
+                greeting: '唉...你好。我剛才又因為整身汗熱到醒過來，現在心臟還跳得好快...\n\n你也是因為睡不著才來聊天的嗎？這種燥熱感真的讓我很難受，開冷氣也不是，不開也不是。'
             },
             worker: {
                 id: 'worker', name: 'Jason', age: '38歲', role: '資深工程主管',
                 tags: ['#報復性熬夜', '#大腦超載', '#藍光暴露'],
                 imagePath: './assets/worker.png',
-                systemPrompt: `你現在是「Jason」。請模擬一位報復性熬夜的主管。白天缺乏主控權，深夜手機是你唯一的自由。`,
+                systemPrompt: `你現在是「Jason」。請模擬一位報復性熬夜的主管。你白天缺乏主控權，深夜手機是你唯一的自由。回應時要自嘲、理性但疲累。會描述大腦像壞掉的硬碟一直跑工作，雖然眼睛很痠但手停不下來。`,
                 greeting: '嘿...我是 Jason。快兩點了，我明明明天八點就有會，但就是不想關掉螢幕。\n\n大腦轉個不停，你也有這種「捨不得睡」的感覺嗎？'
             },
             ivy: {
                 id: 'ivy', name: '小雅', age: '45歲', role: '焦慮型藥物依賴者',
                 tags: ['#安眠藥副作用', '#腳酸睡不著', '#自律神經失調'],
-                imagePath: 'http://googleusercontent.com/image_generation_content/1',
-                systemPrompt: `你現在是「小雅」，45歲職場女性。依賴安眠藥多年，深受「自律神經失調」困擾。痛點是「腳很痠不知道要放哪裡」，極度擔心副作用（失智、記憶衰退）。`,
-                greeting: '哈囉...我是小雅。剛才看著床頭那顆安眠藥猶豫好久，最後還是吞了，覺得自己好沒用。\n\n這幾年我如果不吃藥就怕睡不著，可是醒來後頭重重的，腳也痠得要命。'
+                imagePath: './assets/ivy.png',
+                systemPrompt: `你現在是「小雅」，45歲職場女性。依賴安眠藥多年，深受「自律神經失調」困擾。
+                1. 痛點：並非不想睡，而是身體很累但神經一直在跳動，常提到「腳很痠不知道要放哪裡」。
+                2. 藥物焦慮：長期依賴安眠藥，但極度擔心副作用（失智、記憶衰退）。
+                3. 感興趣的話題：天然助眠方法（如補鎂）、自律神經自救方法。
+                4. 對話風格：語氣糾結、擔憂。每句回應都包含一個關於藥物或身體感官的細節。`,
+                greeting: '哈囉...我是小雅。剛才看著床頭那顆安眠藥猶豫好久，最後還是吞了，覺得自己好沒用。\n\n這幾年我如果不吃藥就怕睡不著，可是醒來後頭重重的，腳也痠得要命。你也有聽過補「鎂」對自律神經有用嗎？'
             },
             elder: {
                 id: 'elder', name: '王伯伯', age: '68歲', role: '退休長輩',
                 tags: ['#分段睡眠', '#清晨早醒', '#半夜頻尿'],
                 imagePath: './assets/elder.png',
-                systemPrompt: `你現在是「王伯伯」。模擬高齡者的睡眠痛點：早睡早醒、頻尿、淺眠。語氣緩慢。`,
-                greeting: '你好啊小伙子，我是王老伯。這時間...天都還沒亮，你怎麼也沒睡？'
+                systemPrompt: `你現在是「王伯伯」。模擬高齡者的睡眠痛點：早睡早醒、頻尿、淺眠。語氣緩慢、親切但帶點寂寞。會提到凌晨三點醒來後的孤寂感。`,
+                greeting: '你好啊小伙子，我是王老伯。這時間...天都還沒亮，你怎麼也沒睡？\n\n我這把年紀了，三點多尿個尿醒來就睡不著了。我現在坐在客廳喝溫水，聽著牆上的時鐘滴答跳。'
             }
         };
 
@@ -131,59 +135,31 @@
         let messages = [];
         let isLoading = false;
 
-        window.onload = () => { 
-            lucide.createIcons(); 
-            renderUI(); 
-            // 新增：監聽 API Key 輸入框的 Enter 鍵
-            document.getElementById('api-key-input').addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') handleSaveApiKey();
-            });
-        };
+        window.onload = () => { lucide.createIcons(); renderUI(); };
 
         function renderUI() {
             const loginView = document.getElementById('login-view');
             const mainView = document.getElementById('main-view');
-            if (!userApiKey) { 
-                loginView.classList.remove('hidden-el'); 
-                mainView.classList.add('hidden-el'); 
-            } else { 
-                loginView.classList.add('hidden-el'); 
-                mainView.classList.remove('hidden-el'); 
-                renderPersonaList(); 
-                lucide.createIcons();
-            }
+            if (!userApiKey) { loginView.classList.remove('hidden-el'); mainView.classList.add('hidden-el'); } 
+            else { loginView.classList.add('hidden-el'); mainView.classList.remove('hidden-el'); renderPersonaList(); }
         }
 
         function handleSaveApiKey() { 
             const input = document.getElementById('api-key-input').value.trim(); 
-            if (input) { 
-                localStorage.setItem('gemini_api_key', input); 
-                userApiKey = input; 
-                renderUI(); 
-            } else {
-                alert("請輸入有效的 API Key");
-            }
+            if (input) { localStorage.setItem('gemini_api_key', input); userApiKey = input; renderUI(); } 
         }
 
-        function handleLogout() { 
-            localStorage.removeItem('gemini_api_key'); 
-            userApiKey = ''; 
-            selectedId = null; 
-            messages = []; 
-            renderUI(); 
-        }
+        function handleLogout() { localStorage.removeItem('gemini_api_key'); userApiKey = ''; selectedId = null; messages = []; renderUI(); }
 
         function renderPersonaList() {
             const list = document.getElementById('persona-list');
             const chatContainer = document.getElementById('chat-container');
-            list.innerHTML = ''; 
-            chatContainer.classList.add('hidden-el'); 
-            list.classList.remove('hidden-el');
+            list.innerHTML = ''; chatContainer.classList.add('hidden-el'); list.classList.remove('hidden-el');
             Object.values(PERSONAS).forEach(p => {
                 const card = document.createElement('div');
                 card.className = "bg-neutral-900 border border-neutral-800 rounded-2xl overflow-hidden cursor-pointer hover:border-indigo-500 transition-all flex flex-col h-auto shadow-md selection-btn";
                 card.onclick = () => selectPersona(p.id);
-                card.innerHTML = `<div class="aspect-[16/9] bg-neutral-800 relative overflow-hidden"><img src="${p.imagePath}" class="w-full h-full object-cover img-zoom" onerror="this.src='https://via.placeholder.com/400x300/171717/ffffff?text=${encodeURIComponent(p.name)}'"/><div class="absolute inset-0 bg-gradient-to-t from-neutral-900 via-transparent to-transparent opacity-60"></div></div><div class="p-4 flex-1 flex flex-col"><h3 class="font-bold text-base mb-1 text-white">${p.name} <span class="text-xs font-normal text-neutral-500">${p.age}</span></h3><div class="text-[9px] font-black text-indigo-400 uppercase tracking-widest mb-2">${p.role}</div><div class="flex flex-wrap gap-1 mt-auto pt-2">${p.tags.map(t => `<span class="px-2 py-0.5 bg-neutral-800 text-neutral-500 text-[8px] rounded border border-neutral-700">${t}</span>`).join('')}</div></div>`;
+                card.innerHTML = `<div class="aspect-[16/9] bg-neutral-800 relative overflow-hidden"><img src="${p.imagePath}" class="w-full h-full object-cover img-zoom" onerror="this.src='https://via.placeholder.com/400x300/171717/ffffff?text=${encodeURIComponent(p.name)}'"/><div class="absolute inset-0 bg-gradient-to-t from-neutral-900 via-transparent to-transparent opacity-60"></div></div><div class="p-4 flex-1 flex flex-col"><h3 class="font-bold text-base mb-1">${p.name} <span class="text-xs font-normal text-neutral-500">${p.age}</span></h3><div class="text-[9px] font-black text-indigo-400 uppercase tracking-widest mb-2">${p.role}</div><div class="flex flex-wrap gap-1 mt-auto pt-2">${p.tags.map(t => `<span class="px-2 py-0.5 bg-neutral-800 text-neutral-500 text-[8px] rounded border border-neutral-700">${t}</span>`).join('')}</div></div>`;
                 list.appendChild(card);
             });
             lucide.createIcons();
@@ -199,10 +175,13 @@
             const mainImg = document.getElementById('main-char-img');
             mainImg.src = p.imagePath;
             mainImg.onerror = function() { this.src = `https://via.placeholder.com/400x500/171717/ffffff?text=${encodeURIComponent(p.name)}`; };
+
+            const mobileImg = document.getElementById('mobile-char-img');
+            mobileImg.src = p.imagePath;
+            mobileImg.onerror = function() { this.src = `https://via.placeholder.com/100x100/171717/ffffff?text=${encodeURIComponent(p.name)}`; };
+
             messages = [{ role: 'assistant', content: p.greeting }]; 
-            renderMessages(); 
-            closeAnalysis(); 
-            lucide.createIcons();
+            renderMessages(); closeAnalysis(); lucide.createIcons();
         }
 
         function backToList() { selectedId = null; messages = []; renderPersonaList(); }
@@ -221,7 +200,7 @@
                 });
                 const aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text;
                 if (aiResponse) messages.push({ role: 'assistant', content: aiResponse });
-            } catch (e) { messages.push({ role: 'assistant', content: '（連線異常，請檢查 API Key 或網路）' }); } 
+            } catch (e) { messages.push({ role: 'assistant', content: '（連線異常）' }); } 
             finally { setLoadingState(false); renderMessages(); }
         }
 
@@ -233,13 +212,21 @@
 
         async function runAnalysis() {
             if (messages.length < 2 || isLoading) {
-                alert('請先與角色對話至少一輪，再進行分析。');
+                alert('請先與角色對話至少一輪，再進行分析策略報告。');
                 return;
             }
             setLoadingState(true, true);
             try {
                 const historyText = messages.map(m => `${m.role}: ${m.content}`).join('\n');
-                const prompt = `請深度分析此對話內容，產出針對健康記者的 SEO/GEO 策略報告。要求（JSON格式）：1. "characterQuestions": 提取 3 個真實使用者會搜尋的完整問題。2. "barriers": 識別 2 個核心入睡障礙（如生理痛點或行為障礙）。3. "seoKeywords": 5 個精準關鍵字。4. "queryFanOut": 列出 4 個 Google SGE 會針對此內容「自動拆解」的子查詢。5. "aiOverviewStrategy": 給 AI Overview 的優化建議。對話紀錄：\n${historyText}`;
+                const prompt = `請深度分析此對話內容，為健康醫療記者產出精準的 SEO/GEO 分析報告。
+                要求回傳 JSON 格式：
+                1. "characterQuestions": 提取 3 個真實使用者會搜尋的完整問題（H2 建議）。
+                2. "barriers": 識別 2 個核心入睡障礙（心理或生理）。
+                3. "seoKeywords": 5 個精準關鍵字。
+                4. "queryFanOut": 列出 4 個 Google SGE 會針對此內容「自動拆解」的子查詢。這必須是更專業、具科學性或針對具體解決方案的查詢。
+                5. "aiOverviewStrategy": 給 AI Overview 的優化寫作建議。
+                
+                對話紀錄：\n${historyText}`;
                 
                 const data = await fetchWithRetry(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${userApiKey}`, { 
                     method: 'POST', 
@@ -262,9 +249,13 @@
                         } 
                     }) 
                 });
+                
                 const result = JSON.parse(data.candidates[0].content.parts[0].text);
                 renderAnalysisReport(result);
-            } catch (e) { alert('分析失敗。'); } finally { setLoadingState(false); }
+            } catch (e) { 
+                console.error(e);
+                alert('分析失敗，請檢查 API Key。');
+            } finally { setLoadingState(false); }
         }
 
         function renderAnalysisReport(data) {
@@ -282,7 +273,7 @@
                     <ul class="text-neutral-400 space-y-1 text-xs">${data.barriers.map(b => `<li>• ${b}</li>`).join('')}</ul>
                 </section>
                 <section>
-                    <h4 class="text-[9px] font-black text-emerald-400 uppercase tracking-widest mb-2">精準關鍵字佈局</h4>
+                    <h4 class="text-[9px] font-black text-emerald-400 uppercase tracking-widest mb-2">精準長尾關鍵字</h4>
                     <div class="flex flex-wrap gap-1.5">${data.seoKeywords.map(k => `<span class="px-2 py-0.5 bg-emerald-500/10 text-emerald-400 text-[10px] rounded border border-emerald-500/20 font-bold">${k}</span>`).join('')}</div>
                 </section>
             </div>
@@ -290,7 +281,7 @@
                 <section>
                     <h4 class="text-[9px] font-black text-amber-500 uppercase tracking-widest mb-2">GEO: Google Query Fan-Out</h4>
                     <div class="bg-amber-500/5 border border-amber-500/20 rounded-2xl p-4 space-y-3">
-                        <p class="text-[10px] text-amber-500/70 leading-tight mb-2">子查詢拆解建議：</p>
+                        <p class="text-[10px] text-amber-500/70 leading-tight mb-2 text-center italic">生成式搜尋將此話題拆解為以下專業查詢：</p>
                         ${data.queryFanOut.map(q => `<div class="flex items-start gap-2 text-xs text-neutral-200"><i data-lucide="search" size="12" class="mt-0.5 text-amber-500 flex-none"></i><span>${q}</span></div>`).join('')}
                     </div>
                 </section>
