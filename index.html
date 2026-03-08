@@ -37,7 +37,7 @@
                 <button onclick="handleSaveApiKey()" class="w-full py-4 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-500 active:scale-[0.98] transition-all shadow-lg shadow-indigo-600/20">開始實驗</button>
                 <p class="text-[10px] text-center text-neutral-600 mt-6 underline italic"><a href="https://aistudio.google.com/" target="_blank">點此前往 Google AI Studio 申請免費金鑰</a></p>
                 <div class="mt-8 pt-6 border-t border-neutral-800/50">
-                    <p class="text-[9px] text-center text-neutral-700 font-mono tracking-widest opacity-50 uppercase">Build Version: 20260107.1111 (Fixed Connectivity)</p>
+                    <p class="text-[9px] text-center text-neutral-700 font-mono tracking-widest opacity-50 uppercase">Build Version: 20260308.V1 (Gemini 2.5 Flash Update)</p>
                 </div>
             </div>
         </div>
@@ -96,19 +96,19 @@
     </div>
 
     <script>
-        // 更新模型名稱：優先使用 gemini-1.5-flash，穩定性較高
-        const API_MODEL = "gemini-1.5-flash"; 
+        // 修正模型名稱：在目前預覽環境中必須使用 gemini-2.5-flash-preview-09-2025
+        const API_MODEL = "gemini-2.5-flash-preview-09-2025"; 
 
         const PERSONAS = {
             menopause: {
                 id: 'menopause', name: '林太太', age: '52歲', role: '更年期女性',
                 tags: ['#盜汗驚醒', '#生理中斷', '#熱潮紅'],
-                imagePath: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=600&auto=format&fit=crop', // 範例圖
+                imagePath: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=600&auto=format&fit=crop',
                 systemPrompt: `你現在是「林太太」，52歲家庭主婦。
-                1. 核心性格：極度疲憊、煩躁但本性溫柔。因為長期睡眠被生理現象中斷，語氣帶有濃重的疲勞感與無奈。
+                1. 核心性格：極度疲憊、焦慮、渴望被理解。因為長期睡眠被生理現象中斷，語氣帶有濃重的疲勞感。
                 2. 生理痛點：常提到「全身汗濕透到可以擰出水」、「心跳快到像要跳出嗓子口」、「熱潮紅像火從胸口燒上來」。
-                3. 對話習慣：會感嘆「以前倒頭就睡，現在怎麼這麼難」，對荷爾蒙藥物有顧慮（怕致癌或副作用），但對天然補品感興趣。
-                4. 回應風格：簡短、真實、多用「唉」、「真的累了」等語助詞，偶爾提到對家人的負擔感。`,
+                3. 對話風格：簡短、真實、多用「唉」、「真的累了」等語助詞。會提到冷氣開了冷、關了熱的兩難。
+                4. 關鍵細節：對荷爾蒙補充療法（HRT）有擔憂，但對天然草本或緩解方法持開放態度。`,
                 greeting: '唉...你好。我剛才又因為整身汗熱到醒過來，現在心臟還跳得好快...\n\n你也是因為睡不著才來聊天的嗎？這種燥熱感真的讓我很難受，開冷氣也不是，不開也不是，搞得全身黏糊糊的。'
             },
             worker: {
@@ -116,10 +116,9 @@
                 tags: ['#報復性熬夜', '#大腦超載', '#藍光暴露'],
                 imagePath: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=600&auto=format&fit=crop',
                 systemPrompt: `你現在是「Jason」，38歲資深開發經理。
-                1. 核心性格：理性的崩潰。白天充滿主控權，深夜卻捨不得放下手機。
-                2. 痛點：報復性熬夜。覺得「現在睡了，明天就要面對工作」，所以強撐著滑手機。
-                3. 對話習慣：會用技術術語自嘲（如大腦 CPU 過熱、硬體老化）。
-                4. 狀態：眼睛很痠、腦袋很重，但手指還在滑。`,
+                1. 核心性格：捨不得睡覺，因為深夜滑手機是唯一的自由。
+                2. 痛點：報復性熬夜，覺得「現在睡了明天就要面對工作」。
+                3. 對話習慣：會用技術術語自嘲（如大腦 CPU 過熱、硬體老化）。`,
                 greeting: '嘿...我是 Jason。快兩點了，我明明明天八點就有會，但就是不想關掉螢幕。\n\n大腦轉個不停，像是一台關不掉的伺服器。你也有這種「捨不得睡」的感覺嗎？'
             },
             ivy: {
@@ -127,9 +126,8 @@
                 tags: ['#安眠藥副作用', '#腳酸睡不著', '#自律神經失調'],
                 imagePath: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=600&auto=format&fit=crop',
                 systemPrompt: `你現在是「小雅」。對安眠藥有強烈依賴感與罪惡感。
-                1. 痛點：自律神經失調、不寧腿症候群（腳痠不知道放哪裡）。
-                2. 焦慮：擔心失智、記憶力衰退。
-                3. 對話風格：焦慮、反覆確認、語氣細碎。`,
+                1. 痛點：自律神經失調、不寧腿（腳痠不知道放哪裡）。
+                2. 焦慮：擔心長期服藥會導致記憶力衰退。`,
                 greeting: '哈囉...我是小雅。剛才看著床頭那顆安眠藥猶豫好久，最後還是吞了，覺得自己好沒用。\n\n這幾年我如果不吃藥就怕睡不著，可是醒來後頭重重的。你也有聽過補「鎂」對自律神經有用嗎？'
             },
             elder: {
@@ -137,8 +135,8 @@
                 tags: ['#分段睡眠', '#清晨早醒', '#半夜頻尿'],
                 imagePath: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=600&auto=format&fit=crop',
                 systemPrompt: `你現在是「王伯伯」。模擬早睡早醒的退休族群。
-                1. 痛點：半夜三點就醒、頻尿、清晨孤寂感。
-                2. 狀態：親切、隨和，但帶有一點「不被需要的寂寞」。`,
+                1. 痛點：半夜三點醒來、頻尿。
+                2. 情緒：親切但帶有一點清晨寂寞。`,
                 greeting: '你好啊小伙子，我是王老伯。這時間...天都還沒亮，你怎麼也沒睡？\n\n我這把年紀了，三點多醒來就睡不著了。我現在坐在客廳聽著牆上的時鐘滴答跳，安靜得有點怕人。'
             }
         };
@@ -224,8 +222,7 @@
 
             try {
                 const persona = PERSONAS[selectedId];
-                // 限制對話長度以節省 token 並保持上下文
-                const historyParts = messages.slice(-8).map(m => ({
+                const historyParts = messages.slice(-10).map(m => ({
                     role: m.role === 'assistant' ? 'model' : 'user',
                     parts: [{ text: m.content }]
                 }));
@@ -236,7 +233,7 @@
                     body: JSON.stringify({ 
                         contents: historyParts, 
                         systemInstruction: { parts: [{ text: persona.systemPrompt }] }, 
-                        generationConfig: { temperature: 0.85, maxOutputTokens: 600 } 
+                        generationConfig: { temperature: 0.85, maxOutputTokens: 800 } 
                     }) 
                 });
 
@@ -247,11 +244,15 @@
 
                 const data = await response.json();
                 const aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text;
-                if (aiResponse) messages.push({ role: 'assistant', content: aiResponse });
+                if (aiResponse) {
+                    messages.push({ role: 'assistant', content: aiResponse });
+                } else {
+                    throw new Error("模型未回傳有效回覆。");
+                }
                 
             } catch (e) { 
-                console.error("API Error:", e);
-                messages.push({ role: 'assistant', content: `（連線異常：${e.message}）\n請檢查 API Key 或稍後再試。` }); 
+                console.error("API Error Details:", e);
+                messages.push({ role: 'assistant', content: `（連線異常：${e.message}）\n建議確認您的 API Key 是否正確且具備 Gemini 2.5 Preview 使用權限。` }); 
             } finally { 
                 setLoadingState(false); 
                 renderMessages(); 
@@ -278,12 +279,12 @@
             try {
                 const historyText = messages.map(m => `${m.role}: ${m.content}`).join('\n');
                 const prompt = `請深度分析此對話內容，為健康醫療記者產出精準的 SEO/GEO 分析報告。
-                要求回傳 JSON 格式：
-                1. "characterQuestions": 提取 3 個真實使用者會搜尋的完整問題（H2 建議）。
-                2. "barriers": 識別 2 個核心入睡障礙（心理或生理）。
-                3. "seoKeywords": 5 個精準關鍵字。
-                4. "queryFanOut": 列出 4 個 Google SGE 會針對此內容「自動拆解」的子查詢。
-                5. "aiOverviewStrategy": 給 AI Overview 的優化寫作建議。
+                要求回傳 JSON 格式，屬性必須包含：
+                - "characterQuestions": (3個)
+                - "barriers": (2個)
+                - "seoKeywords": (5個)
+                - "queryFanOut": (4個)
+                - "aiOverviewStrategy": (1段文字)
                 
                 對話紀錄：\n${historyText}`;
                 
@@ -309,12 +310,14 @@
                     }) 
                 });
 
+                if (!response.ok) throw new Error("分析請求失敗。");
+
                 const data = await response.json();
                 const result = JSON.parse(data.candidates[0].content.parts[0].text);
                 renderAnalysisReport(result);
             } catch (e) { 
                 console.error(e);
-                alert('分析失敗，請檢查 API Key 或對話長度。');
+                alert('分析失敗，請檢查 API Key 或對話內容。');
             } finally { setLoadingState(false); }
         }
 
@@ -341,7 +344,7 @@
                 <section>
                     <h4 class="text-[9px] font-black text-amber-500 uppercase tracking-widest mb-2">GEO: Google Query Fan-Out</h4>
                     <div class="bg-amber-500/5 border border-amber-500/20 rounded-2xl p-4 space-y-3">
-                        <p class="text-[10px] text-amber-500/70 leading-tight mb-2 text-center italic">SGE 將此話題拆解為：</p>
+                        <p class="text-[10px] text-amber-500/70 leading-tight mb-2 text-center italic">生成式搜尋將拆解為：</p>
                         ${data.queryFanOut.map(q => `<div class="flex items-start gap-2 text-xs text-neutral-200"><i data-lucide="search" size="12" class="mt-0.5 text-amber-500 flex-none"></i><span>${q}</span></div>`).join('')}
                     </div>
                 </section>
