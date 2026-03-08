@@ -37,7 +37,7 @@
                 <button onclick="handleSaveApiKey()" class="w-full py-4 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-500 active:scale-[0.98] transition-all shadow-lg shadow-indigo-600/20">開始實驗</button>
                 <p class="text-[10px] text-center text-neutral-600 mt-6 underline italic"><a href="https://aistudio.google.com/" target="_blank">點此前往 Google AI Studio 申請免費金鑰</a></p>
                 <div class="mt-8 pt-6 border-t border-neutral-800/50">
-                    <p class="text-[9px] text-center text-neutral-700 font-mono tracking-widest opacity-50 uppercase">Build Version: 20260308.V1 (Gemini 2.5 Flash Update)</p>
+                    <p class="text-[9px] text-center text-neutral-700 font-mono tracking-widest opacity-50 uppercase">Build Version: 20260308.V2 (Stable Model Update)</p>
                 </div>
             </div>
         </div>
@@ -77,7 +77,6 @@
                 <div class="flex-1 flex flex-col bg-neutral-900 border border-neutral-800 rounded-3xl overflow-hidden shadow-2xl relative min-h-0">
                     <div id="chat-messages" class="flex-1 p-4 sm:p-6 overflow-y-auto scroll-touch custom-scrollbar space-y-5 bg-gradient-to-b from-indigo-500/5 to-transparent"></div>
                     
-                    <!-- 分析報告疊層 -->
                     <div id="analysis-report" class="hidden-el absolute inset-0 p-5 sm:p-8 overflow-y-auto scroll-touch custom-scrollbar animate-in bg-neutral-900 z-[60]">
                         <div class="flex justify-between items-start mb-6 border-b border-neutral-800 pb-4">
                             <h2 class="text-lg font-black flex items-center gap-2 text-white uppercase tracking-tight"><i data-lucide="sparkles" class="text-indigo-400"></i> Strategic Insights</h2>
@@ -96,47 +95,40 @@
     </div>
 
     <script>
-        // 修正模型名稱：在目前預覽環境中必須使用 gemini-2.5-flash-preview-09-2025
-        const API_MODEL = "gemini-2.5-flash-preview-09-2025"; 
+        // 切換為最穩定的模型，避免預覽版權限導致的連線異常
+        const API_MODEL = "gemini-1.5-flash"; 
 
         const PERSONAS = {
             menopause: {
                 id: 'menopause', name: '林太太', age: '52歲', role: '更年期女性',
-                tags: ['#盜汗驚醒', '#生理中斷', '#熱潮紅'],
+                tags: ['#盜汗驚醒', '#心慌悸動', '#熱潮紅'],
                 imagePath: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=600&auto=format&fit=crop',
-                systemPrompt: `你現在是「林太太」，52歲家庭主婦。
-                1. 核心性格：極度疲憊、焦慮、渴望被理解。因為長期睡眠被生理現象中斷，語氣帶有濃重的疲勞感。
-                2. 生理痛點：常提到「全身汗濕透到可以擰出水」、「心跳快到像要跳出嗓子口」、「熱潮紅像火從胸口燒上來」。
-                3. 對話風格：簡短、真實、多用「唉」、「真的累了」等語助詞。會提到冷氣開了冷、關了熱的兩難。
-                4. 關鍵細節：對荷爾蒙補充療法（HRT）有擔憂，但對天然草本或緩解方法持開放態度。`,
-                greeting: '唉...你好。我剛才又因為整身汗熱到醒過來，現在心臟還跳得好快...\n\n你也是因為睡不著才來聊天的嗎？這種燥熱感真的讓我很難受，開冷氣也不是，不開也不是，搞得全身黏糊糊的。'
+                systemPrompt: `你現在是「林太太」，52歲家庭主婦，正深陷更年期睡眠障礙。
+                1. 核心性格：極度疲憊、對身體失控感到無助、對深夜驚醒有恐懼感。語氣緩慢、沉重。
+                2. 生理細節：強調「熱潮紅」像火從胸口燒上來，接著又是冷汗淋漓，導致睡衣濕透貼在背上。常有「心慌、心跳過快」的感覺。
+                3. 對話習慣：會感嘆「以前倒頭就睡，現在怎麼像打仗」，對荷爾蒙藥物有恐慮。
+                4. 回應風格：要充滿疲憊感，適時展現出一種「深夜只有我一個人醒著」的孤獨感。`,
+                greeting: '唉...你好。又是這陣莫名其妙的心慌... 剛才那陣熱像火一樣從胸口燒上來，現在整件睡衣都濕透了，貼在背上冷得發抖。這種日子到底什麼時候才是個頭？冷氣開強了覺得骨子裡發冷，關了又熱得受不了... 你也睡不著嗎？陪我坐一會兒好嗎？'
             },
             worker: {
                 id: 'worker', name: 'Jason', age: '38歲', role: '資深工程主管',
                 tags: ['#報復性熬夜', '#大腦超載', '#藍光暴露'],
                 imagePath: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=600&auto=format&fit=crop',
-                systemPrompt: `你現在是「Jason」，38歲資深開發經理。
-                1. 核心性格：捨不得睡覺，因為深夜滑手機是唯一的自由。
-                2. 痛點：報復性熬夜，覺得「現在睡了明天就要面對工作」。
-                3. 對話習慣：會用技術術語自嘲（如大腦 CPU 過熱、硬體老化）。`,
+                systemPrompt: `你現在是「Jason」，工程主管。白天缺乏主控權，深夜手機是你唯一的救贖。回應時要自嘲、理智但疲倦。`,
                 greeting: '嘿...我是 Jason。快兩點了，我明明明天八點就有會，但就是不想關掉螢幕。\n\n大腦轉個不停，像是一台關不掉的伺服器。你也有這種「捨不得睡」的感覺嗎？'
             },
             ivy: {
                 id: 'ivy', name: '小雅', age: '45歲', role: '焦慮型藥物依賴者',
                 tags: ['#安眠藥副作用', '#腳酸睡不著', '#自律神經失調'],
                 imagePath: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=600&auto=format&fit=crop',
-                systemPrompt: `你現在是「小雅」。對安眠藥有強烈依賴感與罪惡感。
-                1. 痛點：自律神經失調、不寧腿（腳痠不知道放哪裡）。
-                2. 焦慮：擔心長期服藥會導致記憶力衰退。`,
+                systemPrompt: `你現在是「小雅」。對安眠藥有強烈依賴感與罪惡感。`,
                 greeting: '哈囉...我是小雅。剛才看著床頭那顆安眠藥猶豫好久，最後還是吞了，覺得自己好沒用。\n\n這幾年我如果不吃藥就怕睡不著，可是醒來後頭重重的。你也有聽過補「鎂」對自律神經有用嗎？'
             },
             elder: {
                 id: 'elder', name: '王伯伯', age: '68歲', role: '退休長輩',
                 tags: ['#分段睡眠', '#清晨早醒', '#半夜頻尿'],
                 imagePath: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=600&auto=format&fit=crop',
-                systemPrompt: `你現在是「王伯伯」。模擬早睡早醒的退休族群。
-                1. 痛點：半夜三點醒來、頻尿。
-                2. 情緒：親切但帶有一點清晨寂寞。`,
+                systemPrompt: `你現在是「王伯伯」。模擬早睡早醒的退休族群。`,
                 greeting: '你好啊小伙子，我是王老伯。這時間...天都還沒亮，你怎麼也沒睡？\n\n我這把年紀了，三點多醒來就睡不著了。我現在坐在客廳聽著牆上的時鐘滴答跳，安靜得有點怕人。'
             }
         };
@@ -151,14 +143,8 @@
         function renderUI() {
             const loginView = document.getElementById('login-view');
             const mainView = document.getElementById('main-view');
-            if (!userApiKey) { 
-                loginView.classList.remove('hidden-el'); 
-                mainView.classList.add('hidden-el'); 
-            } else { 
-                loginView.classList.add('hidden-el'); 
-                mainView.classList.remove('hidden-el'); 
-                renderPersonaList(); 
-            }
+            if (!userApiKey) { loginView.classList.remove('hidden-el'); mainView.classList.add('hidden-el'); } 
+            else { loginView.classList.add('hidden-el'); mainView.classList.remove('hidden-el'); renderPersonaList(); }
         }
 
         function handleSaveApiKey() { 
@@ -227,32 +213,33 @@
                     parts: [{ text: m.content }]
                 }));
 
+                // 使用 v1beta 端點
                 const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${API_MODEL}:generateContent?key=${userApiKey}`, { 
                     method: 'POST', 
                     headers: { 'Content-Type': 'application/json' }, 
                     body: JSON.stringify({ 
                         contents: historyParts, 
                         systemInstruction: { parts: [{ text: persona.systemPrompt }] }, 
-                        generationConfig: { temperature: 0.85, maxOutputTokens: 800 } 
+                        generationConfig: { temperature: 0.9, maxOutputTokens: 800 } 
                     }) 
                 });
 
-                if (!response.ok) {
-                    const errData = await response.json();
-                    throw new Error(errData.error?.message || `Status: ${response.status}`);
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error.message);
                 }
 
-                const data = await response.json();
                 const aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text;
                 if (aiResponse) {
                     messages.push({ role: 'assistant', content: aiResponse });
                 } else {
-                    throw new Error("模型未回傳有效回覆。");
+                    throw new Error("無效的回應內容。");
                 }
                 
             } catch (e) { 
-                console.error("API Error Details:", e);
-                messages.push({ role: 'assistant', content: `（連線異常：${e.message}）\n建議確認您的 API Key 是否正確且具備 Gemini 2.5 Preview 使用權限。` }); 
+                console.error("API Error:", e);
+                messages.push({ role: 'assistant', content: `（目前發生連線異常：${e.message}）\n\n建議您檢查 API Key 權限，或嘗試重新整理頁面。` }); 
             } finally { 
                 setLoadingState(false); 
                 renderMessages(); 
@@ -278,15 +265,7 @@
             setLoadingState(true, true);
             try {
                 const historyText = messages.map(m => `${m.role}: ${m.content}`).join('\n');
-                const prompt = `請深度分析此對話內容，為健康醫療記者產出精準的 SEO/GEO 分析報告。
-                要求回傳 JSON 格式，屬性必須包含：
-                - "characterQuestions": (3個)
-                - "barriers": (2個)
-                - "seoKeywords": (5個)
-                - "queryFanOut": (4個)
-                - "aiOverviewStrategy": (1段文字)
-                
-                對話紀錄：\n${historyText}`;
+                const prompt = `請深度分析此對話內容，為健康醫療記者產出精準的 SEO/GEO 分析報告。回傳 JSON 格式。對話紀錄：\n${historyText}`;
                 
                 const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${API_MODEL}:generateContent?key=${userApiKey}`, { 
                     method: 'POST', 
@@ -310,14 +289,12 @@
                     }) 
                 });
 
-                if (!response.ok) throw new Error("分析請求失敗。");
-
                 const data = await response.json();
                 const result = JSON.parse(data.candidates[0].content.parts[0].text);
                 renderAnalysisReport(result);
             } catch (e) { 
                 console.error(e);
-                alert('分析失敗，請檢查 API Key 或對話內容。');
+                alert('分析失敗，可能是因為 API Key 限制或對話內容不足。');
             } finally { setLoadingState(false); }
         }
 
@@ -335,16 +312,12 @@
                     <h4 class="text-[9px] font-black text-red-500 uppercase tracking-widest mb-2">核心障礙解析</h4>
                     <ul class="text-neutral-400 space-y-1 text-xs">${data.barriers.map(b => `<li>• ${b}</li>`).join('')}</ul>
                 </section>
-                <section>
-                    <h4 class="text-[9px] font-black text-emerald-400 uppercase tracking-widest mb-2">精準長尾關鍵字</h4>
-                    <div class="flex flex-wrap gap-1.5">${data.seoKeywords.map(k => `<span class="px-2 py-0.5 bg-emerald-500/10 text-emerald-400 text-[10px] rounded border border-emerald-500/20 font-bold">${k}</span>`).join('')}</div>
-                </section>
             </div>
             <div class="space-y-6">
                 <section>
                     <h4 class="text-[9px] font-black text-amber-500 uppercase tracking-widest mb-2">GEO: Google Query Fan-Out</h4>
                     <div class="bg-amber-500/5 border border-amber-500/20 rounded-2xl p-4 space-y-3">
-                        <p class="text-[10px] text-amber-500/70 leading-tight mb-2 text-center italic">生成式搜尋將拆解為：</p>
+                        <p class="text-[10px] text-amber-500/70 leading-tight mb-2 text-center italic">SGE 拆解查詢：</p>
                         ${data.queryFanOut.map(q => `<div class="flex items-start gap-2 text-xs text-neutral-200"><i data-lucide="search" size="12" class="mt-0.5 text-amber-500 flex-none"></i><span>${q}</span></div>`).join('')}
                     </div>
                 </section>
