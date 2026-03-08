@@ -194,13 +194,16 @@
             try {
                 const persona = PERSONAS[selectedId];
                 const historyText = messages.slice(-10).map(m => `${m.role === 'assistant' ? '角色' : '使用者'}: ${m.content}`).join('\n');
-                const data = await fetchWithRetry(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${userApiKey}`, { 
+                const data = await fetchWithRetry(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${userApiKey}`, { 
                     method: 'POST', headers: { 'Content-Type': 'application/json' }, 
                     body: JSON.stringify({ contents: [{ parts: [{ text: `${historyText}\n使用者: ${text}\n請回應：` }] }], systemInstruction: { parts: [{ text: persona.systemPrompt }] }, generationConfig: { temperature: 0.85, maxOutputTokens: 1000 } }) 
                 });
                 const aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text;
                 if (aiResponse) messages.push({ role: 'assistant', content: aiResponse });
-            } catch (e) { messages.push({ role: 'assistant', content: '（連線異常）' }); } 
+            } catch (e) { 
+                console.error("Chat API error:", e); // 更詳細的錯誤日誌
+                messages.push({ role: 'assistant', content: '（連線異常或 API Key 無效，請檢查開發者工具Console訊息）' }); 
+            } 
             finally { setLoadingState(false); renderMessages(); }
         }
 
@@ -228,7 +231,7 @@
                 
                 對話紀錄：\n${historyText}`;
                 
-                const data = await fetchWithRetry(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${userApiKey}`, { 
+                const data = await fetchWithRetry(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${userApiKey}`, { 
                     method: 'POST', 
                     headers: { 'Content-Type': 'application/json' }, 
                     body: JSON.stringify({ 
@@ -253,8 +256,8 @@
                 const result = JSON.parse(data.candidates[0].content.parts[0].text);
                 renderAnalysisReport(result);
             } catch (e) { 
-                console.error(e);
-                alert('分析失敗，請檢查 API Key。');
+                console.error("Analysis API error:", e); // 更詳細的錯誤日誌
+                alert('分析失敗，請檢查 API Key 或網路連線。'); // 添加更具體的錯誤提示
             } finally { setLoadingState(false); }
         }
 
@@ -301,7 +304,22 @@
             const text = document.getElementById('analysis-btn-text');
             if (l && isA) { text.innerText = "分析中..."; } else { text.innerText = "分析策略報告"; }
         }
-        async function fetchWithRetry(u, o, m = 5) { for (let i = 0; i < m; i++) { try { const r = await fetch(u, o); if (!r.ok) throw new Error(); return await r.json(); } catch (e) { if (i === m - 1) throw e; await new Promise(res => setTimeout(res, 1000 * (i + 1))); } } }
+        async function fetchWithRetry(u, o, m = 5) { 
+            for (let i = 0; i < m; i++) { 
+                try { 
+                    const r = await fetch(u, o); 
+                    if (!r.ok) {
+                        const errorText = await r.text();
+                        throw new Error(`HTTP error! Status: ${r.status}, Message: ${errorText}`); 
+                    }
+                    return await r.json(); 
+                } catch (e) { 
+                    console.error(`Fetch attempt ${i + 1} failed for URL: ${u}`, e); 
+                    if (i === m - 1) throw e; 
+                    await new Promise(res => setTimeout(res, 1000 * (i + 1))); 
+                } 
+            } 
+        }
     </script>
 </body>
 </html>
